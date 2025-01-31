@@ -1,5 +1,5 @@
 export class Controls {
-    constructor(cube) { // map the keys
+    constructor(cube) {
         this.cube = cube;
         this.keys = {};
         window.addEventListener('keydown', (e) => (this.keys[e.code] = true));

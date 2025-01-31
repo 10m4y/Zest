@@ -1,26 +1,44 @@
-import { Cube } from './cube.js';
-import { Crate } from './crate.js';
-import { World } from './world.js';
-import { Controls } from './controls.js';
+import * as THREE from 'three';
+import { Cube } from "./cube.js";
+import { Crate } from "./crate.js";
+import { World } from "./world.js";
+import { Controls } from "./controls.js";
 
 export class Game {
-    constructor() {
-        this.world = new World();
-        this.cube = new Cube(this.world.scene);
-        this.controls = new Controls(this.cube);
+  constructor() {
+    this.world = new World();
+    this.cube = new Cube(this.world.scene);
+    this.controls = new Controls(this.cube);
 
-        this.crates = [ // random crate gen
-            new Crate(this.world.scene, { x: 2, y: 0.5, z: -3 }),
-            new Crate(this.world.scene, { x: -2, y: 0.5, z: 4 }),
-        ];
-
-        this.animate();
+    const n = 5;
+    this.crates = [];
+    for (let i = 0; i < n; i++) {
+      const randomX = (Math.random() - 0.5) * 10;
+      const randomZ = (Math.random() - 0.5) * 10;
+      const crate = new Crate(this.world.scene, new THREE.Vector3(randomX, 0.5, randomZ));
+      this.crates.push(crate);
     }
 
-    animate() {
-        requestAnimationFrame(() => this.animate());
+    this.animate();
+  }
 
-        this.controls.update();
-        this.world.render();
+  checkCrateCollision() {
+    for (let i = this.crates.length - 1; i >= 0; i--) {
+      const crate = this.crates[i];
+
+      if (this.cube.mesh.position.distanceTo(crate.mesh.position) < 1) {
+        this.cube.mesh.material.color.copy(crate.mesh.material.color);
+        this.world.scene.remove(crate.mesh);
+        this.crates.splice(i, 1);
+      }
     }
+  }
+
+  animate() {
+    requestAnimationFrame(() => this.animate());
+
+    this.controls.update();
+    this.checkCrateCollision();
+    this.world.render();
+  }
 }

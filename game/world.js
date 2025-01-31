@@ -8,12 +8,10 @@ export class World {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(this.renderer.domElement);
 
-        // lighting
         const light = new THREE.DirectionalLight(0xffffff, 1);
         light.position.set(5, 10, 5);
         this.scene.add(light);
 
-        // ground setup
         const groundGeometry = new THREE.PlaneGeometry(20, 20);
         const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
         this.ground = new THREE.Mesh(groundGeometry, groundMaterial);
