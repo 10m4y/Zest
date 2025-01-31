@@ -9,7 +9,6 @@ export class Game {
     this.world = new World();
     this.cube = new Cube(this.world.scene);
     this.controls = new Controls(this.cube);
-    this.metadata = [];
 
     const n = 5;
     this.crates = [];
@@ -30,10 +29,7 @@ export class Game {
 
       if (this.cube.mesh.position.distanceTo(crate.mesh.position) < 1) {
         this.cube.mesh.material.color.copy(crate.mesh.material.color);
-        this.metadata.push(crate.mesh.material.color.clone());
-
-        console.log("Collected crate colors:", this.metadata);
-
+        metadata.push(crate.mesh.material.color);
         this.world.scene.remove(crate.mesh);
         this.crates.splice(i, 1);
       }
