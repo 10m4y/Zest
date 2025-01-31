@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import * as THREE from "three";
 import { Cube } from "./cube.js";
 import { Crate } from "./crate.js";
 import { World } from "./world.js";
@@ -15,7 +15,10 @@ export class Game {
     for (let i = 0; i < n; i++) {
       const randomX = (Math.random() - 0.5) * 10;
       const randomZ = (Math.random() - 0.5) * 10;
-      const crate = new Crate(this.world.scene, new THREE.Vector3(randomX, 0.5, randomZ));
+      const crate = new Crate(
+        this.world.scene,
+        new THREE.Vector3(randomX, 0.5, randomZ)
+      );
       this.crates.push(crate);
     }
 
@@ -23,13 +26,18 @@ export class Game {
   }
 
   checkCrateCollision() {
-    const metadata = [];
+    const metadata = new Set();
     for (let i = this.crates.length - 1; i >= 0; i--) {
       const crate = this.crates[i];
 
       if (this.cube.mesh.position.distanceTo(crate.mesh.position) < 1) {
         this.cube.mesh.material.color.copy(crate.mesh.material.color);
-        metadata.push(crate.mesh.material.color);
+
+        const skinCode = crate.mesh.material.color.getHexString();
+        metadata.add(skinCode);
+
+        console.log([...metadata]);
+
         this.world.scene.remove(crate.mesh);
         this.crates.splice(i, 1);
       }
