@@ -18,7 +18,7 @@ export class Game {
     this.equippedSkin = "skin_man";
     this.clock = new THREE.Clock();
 
-    // Available skins from Blocky Characters
+    // skins from Blocky Characters
     this.availableSkins = [
       "skin_man",
       "skin_woman",
@@ -28,26 +28,31 @@ export class Game {
       "skin_adventurer",
     ];
 
-    const n = 25;
-    this.crates = [];
-    for (let i = 0; i < n; i++) {
-      const randomX = (Math.random() - 0.25) * 50;
-      const randomZ = (Math.random() - 0.25) * 50;
-      const crate = new Crate(
-        this.world.scene,
-        new THREE.Vector3(randomX, 0.5, randomZ),
-        this.availableSkins[
-          Math.floor(Math.random() * this.availableSkins.length)
-        ]
-      );
-      this.crates.push(crate);
-    }
+    const count = 25;
+    this.generateCrates(count);
 
     this.isMarketOpen = false;
     this.currentMarketView = null;
 
     this.initializeEventListeners();
     this.animate();
+  }
+
+  generateCrates(n) {
+    this.crates = [];
+    for (let i = 0; i < n; i++) {
+      const randomX = Math.random() * 50;
+      const randomZ = Math.random() * 50;
+      const crate = new Crate(
+        this.world.scene,
+        new THREE.Vector3(randomX, 2.5, randomZ),
+        this.availableSkins[
+          Math.floor(Math.random() * this.availableSkins.length)
+        ]
+      );
+      this.crates.push(crate);
+    }
+    return this.crates;
   }
 
   initializeEventListeners() {
@@ -144,15 +149,35 @@ export class Game {
   }
 
   checkMarketPopup() {
-    if (!this.market.mesh || !this.market.mesh.position) return;
-    const isNearMarket =
-      this.cube.mesh.position.distanceTo(this.market.mesh.position) < 2;
+    if (!this.market.mesh || !this.cube.mesh) return;
+    
+    // Get actual market position from its mesh
+    const marketPosition = new THREE.Vector3();
+    this.market.mesh.getWorldPosition(marketPosition);
+    
+    // Get player position
+    const playerPosition = this.cube.mesh.position.clone();
+    
+    // Calculate horizontal distance (ignore Y-axis)
+    marketPosition.y = playerPosition.y;
+    const distance = playerPosition.distanceTo(marketPosition);
 
-    if (isNearMarket && !this.isMarketOpen) {
-      this.isMarketOpen = true;
-      this.showMarketMain();
-    } else if (!isNearMarket && this.isMarketOpen) {
-      this.closeMarket();
+    // Debugging logs
+    console.log('Market position:', marketPosition);
+    console.log('Player position:', playerPosition);
+    console.log('Distance:', distance);
+
+    // Adjust detection radius
+    const detectionRadius = 3; // Increased from 2 to 3
+    
+    if (distance < detectionRadius) {
+      if (!this.isMarketOpen) {
+        this.showMarketMain();
+      }
+    } else {
+      if (this.isMarketOpen) {
+        this.closeMarket();
+      }
     }
   }
 
@@ -270,8 +295,8 @@ export class Game {
 
     if (intersects.length > 0) {
       const groundHeight = intersects[0].point.y;
-      if (this.cube.mesh.position.y <= groundHeight + 1) {
-        this.cube.mesh.position.y = groundHeight + 1;
+      if (this.cube.mesh.position.y <= groundHeight + 2.5) {
+        this.cube.mesh.position.y = groundHeight + 2.5;
         this.cube.velocity.y = 0;
         this.cube.isGrounded = true;
       }

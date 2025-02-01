@@ -6,7 +6,7 @@ export class Market {
     new GLTFLoader().load('../assets/Market_Stalls.glb', (gltf) => {
       this.mesh = gltf.scene;
       this.mesh.position.copy(position);
-      this.mesh.scale.set(10, 10, 10);
+      this.mesh.scale.set(12, 12, 12);
       scene.add(this.mesh);
     });
   }
