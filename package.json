@@ -2,8 +2,11 @@
   "dependencies": {
     "@types/three": "^0.173.0",
     "axios": "^1.7.9",
+    "dotenv": "^16.4.7",
     "ethers": "^5.7.2",
-    "three": "^0.173.0"
+    "fs": "^0.0.1-security",
+    "three": "^0.173.0",
+    "web3": "^4.16.0"
   },
   "devDependencies": {
     "vite": "^6.0.11"

@@ -5,6 +5,8 @@ import { World } from "./world.js";
 import { Controls } from "./controls.js";
 import { Market } from "./market.js";
 
+// const { CallMint } = require('./mint');
+
 export class Game {
   constructor() {
     this.world = new World();
@@ -21,6 +23,7 @@ export class Game {
     this.currentMarketView = localStorage.getItem("currentMarketView") || null;
     this.isMarketOpen =
       localStorage.getItem("isMarketOpen") === "true" || false;
+    this.wallet_address = localStorage.getItem("wallet_address");
 
     // skins from Blocky Characters
     this.availableSkins = [
@@ -32,13 +35,6 @@ export class Game {
       "skin_robot",
       "skin_soldier",
       "skin_adventurer",
-    ];
-
-    this.availableTools = [
-        "knife",
-        "mace",
-        "pistol",
-        "sword",
     ];
 
     const count = 10;
@@ -167,6 +163,7 @@ export class Game {
           this.skins.add(crate.skinCode);
           this.updateSkinBar();
           this.equipSkin(crate.skinCode);
+          //CallMint(crate.skinCode);
         }
 
         this.world.scene.remove(crate.mesh);
