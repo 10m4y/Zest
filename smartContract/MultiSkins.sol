@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
-import "openzeppelin-contracts/contracts/access/Ownable.sol";
-import "openzeppelin-contracts/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract MultiSkins is ERC721, Ownable {
     using Strings for uint256;
-    
-    // Array that will store URIs for each skin
+
+// Array that will store URIs for each skin
     string[4] private imageURIs;
     
     // Array to track number of mints for each skin
     uint256[4] public mintCounts;
-    
+        
     // Total number of skin NFTs minted
     uint256 private _skinIds;
 
@@ -24,7 +24,7 @@ contract MultiSkins is ERC721, Ownable {
         string memory name,
         string memory symbol,
         string[4] memory _imageURIs
-    ) ERC721(name, symbol) {
+    ) ERC721(name, symbol) Ownable(msg.sender) {  
         imageURIs = _imageURIs;
     }
 
@@ -40,9 +40,16 @@ contract MultiSkins is ERC721, Ownable {
         mintCounts[skinType]++;
     }
 
+    // ✅ Public wrapper for _exists
+    function tokenExists(uint256 tokenId) public view returns (bool) {
+        return ownerOf(tokenId) != address(0);
+    }
+
+
+
     // Function to get the URI for a specific skin
     function tokenURI(uint256 skinId) public view virtual override returns (string memory) {
-        require(_exists(skinId), "Token does not exist");
+        require(tokenExists(skinId), "Token does not exist");  
         
         uint256 skinType = _skinTypes[skinId];
         return imageURIs[skinType];
@@ -66,8 +73,8 @@ contract MultiSkins is ERC721, Ownable {
     }
 
     // Function to get skin type for a specific token
-    function getskinType(uint256 skinId) public view returns (uint256) {
-        require(_exists(skinId), "Token does not exist");
+    function getSkinType(uint256 skinId) public view returns (uint256) {
+        require(tokenExists(skinId), "Token does not exist");
         return _skinTypes[skinId];
     }
 }

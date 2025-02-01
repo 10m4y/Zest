@@ -1,26 +1,42 @@
 "use client"
 
-import { useWriteContract, useWaitForTransaction } from "wagmi";
-import ExchangeABI from "../constants/ExchangeABI.json";
-import { EXCHANGE_CONTRACT } from "../constants";
+import { useWriteContract, useTransaction } from "wagmi";
+import ExchangeABI from "../components/abis/exchange.json";
+import { EXCHANGE_CONTRACT } from "../components/constants";
 import { parseEther } from "viem";
+import { useState } from "react";
 
-export function TradeSkin({skinType}:{skinType:number}){
+interface TradeSkinProps {
 
-    const {data,write:tradeSkin}=useWriteContract({
-        address:EXCHANGE_CONTRACT,
-        abi:ExchangeABI,
-        functionName:"tradeSkin",
-        args:[skinType],
-        value: parseEther("0.01"), // Adjust price
-    });
+    skinType:number
+    price?:string
 
-    const { isLoading } = useWaitForTransaction({
-        hash: data?.hash,
-      });
-      return (
-        <button onClick={() => tradeSkin?.()} disabled={isLoading}>
-          {isLoading ? "Buying..." : "Buy Skin"}
-        </button>
-      );
 }
+
+export function TradeSkin({ skinType, price = "0.01" }: TradeSkinProps) {
+    const { writeContract, data: hash } = useWriteContract()
+    
+    const { isLoading, isSuccess } = useTransaction({
+      hash,
+    })
+    
+    const handleTrade = () => {
+      writeContract({
+        address: EXCHANGE_CONTRACT,
+        abi: ExchangeABI,
+        functionName: "tradeSkin",
+        args: [skinType],
+        value: parseEther(price),
+      })
+    }
+  
+    return (
+      <button 
+        onClick={handleTrade} 
+        disabled={isLoading}
+        className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+      >
+        {isLoading ? "Buying..." : isSuccess ? "Purchase Complete!" : "Buy Skin"}
+      </button>
+    )
+  }

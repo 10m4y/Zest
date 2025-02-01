@@ -35,43 +35,77 @@ async function connectMetamask() {
 }
 
 async function fetchNFTs(walletAddress) {
+    if (!walletAddress || !walletAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
+        throw new Error("Invalid wallet address format");
+    }
     try {
-        const url = `https://deep-index.moralis.io/api/v2/nft/${walletAddress}`;
+        const url = `https://deep-index.moralis.io/api/v2/${walletAddress}/nft`;
+        console.log("Fetching NFTs for wallet:", walletAddress); 
         const response = await axios.get(url, {
             headers: {
-                // "X-API-Key": process.env.MORALIS_API_KEY, // Replace with your actual API key
-                "X-API-Key":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6ImI5NzRlNmI2LTA4NWMtNDY0Ni04NTAzLTA0MjdkMThjZDQ3NCIsIm9yZ0lkIjoiNDI4NzYxIiwidXNlcklkIjoiNDQxMDM2IiwidHlwZUlkIjoiNGJkYzliMzktNjRhZC00NWZkLTk4NTktZjE2NzhmODA0ZTg3IiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3Mzg0MDYyOTAsImV4cCI6NDg5NDE2NjI5MH0.Uk-eecGq8n00z7Ky1yw1ubkibGKZc2g8uWCpBiBqdaE"
+                "X-API-Key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6ImI5NzRlNmI2LTA4NWMtNDY0Ni04NTAzLTA0MjdkMThjZDQ3NCIsIm9yZ0lkIjoiNDI4NzYxIiwidXNlcklkIjoiNDQxMDM2IiwidHlwZUlkIjoiNGJkYzliMzktNjRhZC00NWZkLTk4NTktZjE2NzhmODA0ZTg3IiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3Mzg0MDYyOTAsImV4cCI6NDg5NDE2NjI5MH0.Uk-eecGq8n00z7Ky1yw1ubkibGKZc2g8uWCpBiBqdaE"
             },
+            params: {
+                chain: "sepolia",
+                format: "decimal",
+                limit:100
+            }
         });
+        if (!response.data || !response.data.result) {
+            console.error("Invalid response format:", response.data);
+            throw new Error("Invalid API response format");
+        }
 
         const allNFTs = response.data.result;
+        console.log(`Found ${allNFTs.length} NFTs total`); // Debugging
+        console.log("All NFTs:", allNFTs); // Debugging
 
-        const skinsNFTs = allNFTs.filter(nft =>
-            nft.metadata &&
-            (nft.metadata.toLowerCase().includes('skin') ||
-            JSON.stringify(nft.metadata).toLowerCase().includes('skin'))
-        );
+        const skinsNFTs = [];
+
+        for (const nft of allNFTs) {
+            let metadata = nft.metadata;
+            
+            // If metadata is a URL, fetch it
+            if (metadata && metadata.startsWith("http")) {
+                try {
+                    const metaResponse = await axios.get(metadata);
+                    metadata = metaResponse.data;
+                } catch (err) {
+                    console.warn("Error fetching metadata:", err);
+                    continue; // Skip this NFT
+                }
+            } else if (metadata) {
+                try {
+                    metadata = JSON.parse(metadata);
+                } catch (err) {
+                    console.warn("Error parsing metadata:", err);
+                    continue;
+                }
+            } else {
+                continue; // Skip if metadata is null
+            }
+
+            console.log("Parsed Metadata:", metadata);
+
+            if (metadata && metadata.attributes) {
+                const skinTrait = metadata.attributes.find(attr => attr.trait_type.toLowerCase() === 'skincode');
+                if (skinTrait) {
+                    skinsNFTs.push(skinTrait.value);
+                }
+            }
+        }
 
         if (skinsNFTs.length > 0) {
-            const skinColors = skinsNFTs.map(nft => {
-                if (nft.metadata) {
-                    const metadata = JSON.parse(nft.metadata);
-                    if (metadata.attributes) {
-                        const skinTrait = metadata.attributes.find(trait => trait.trait_type.toLowerCase() === 'skincode');
-                        return skinTrait ? skinTrait.value : null;
-                    }
-                }
-                return null;
-            }).filter(color => color); // Remove null values
-
-            window.updateSkinBar(skinColors);
+            console.log("Skin Colors:", skinsNFTs);
+            window.updateSkinBar(skinsNFTs);
         } else {
-            console.log('No skins found');
+            console.log("No skins found.");
         }
     } catch (error) {
         console.error("Error fetching NFTs:", error);
     }
 }
+
 
 
 

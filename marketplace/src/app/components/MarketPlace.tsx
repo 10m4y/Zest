@@ -1,86 +1,161 @@
 "use client"
 
 import { useState } from "react";
-import { SkinCard } from "./SkinCard";
 import axios from "axios";
 import { SellSkin } from "./SellSkin";
-const fetchNFTs = async (walletAddress:string) => {
+import { http, createConfig } from 'wagmi';
+import { sepolia } from 'wagmi/chains';
+import { WagmiProvider } from 'wagmi';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// Create Wagmi config
+const config = createConfig({
+  chains: [sepolia],
+  transports: {
+    [sepolia.id]: http()
+  }
+});
+
+// Create Query client for Wagmi
+const queryClient = new QueryClient();
+
+// Default mapping for NFT images and details
+const defaultNFTDetails = {
+  '1': {
+    image: "https://gateway.pinata.cloud/ipfs/bafkreidnt4fcdokrw5pterkwapf4mfqxnqq7smexmauomeyynptfrek66y",
+    name: 'Epic Skin #1',
+    description: 'A rare collectible skin'
+  },
+  '2': {
+    image: "https://gateway.pinata.cloud/ipfs/bafkreiebl7cxougnm7p6cezszceu4ujjitouoyqxyevaedpqvcdlcoc5gq",
+    name: 'Legendary Skin #2',
+    description: 'Limited edition skin'
+  }
+};
+
+const fetchNFTs = async (walletAddress) => {
   try {
     console.log("Fetching NFTs for wallet:", walletAddress);
-    const url = `https://deep-index.moralis.io/api/v2/nft/${walletAddress}`;
+    const url = `https://deep-index.moralis.io/api/v2/${walletAddress}/nft`;
     const response = await axios.get(url, {
       headers: {
         "X-API-Key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6ImI5NzRlNmI2LTA4NWMtNDY0Ni04NTAzLTA0MjdkMThjZDQ3NCIsIm9yZ0lkIjoiNDI4NzYxIiwidXNlcklkIjoiNDQxMDM2IiwidHlwZUlkIjoiNGJkYzliMzktNjRhZC00NWZkLTk4NTktZjE2NzhmODA0ZTg3IiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3Mzg0MDYyOTAsImV4cCI6NDg5NDE2NjI5MH0.Uk-eecGq8n00z7Ky1yw1ubkibGKZc2g8uWCpBiBqdaE",
       },
+      params: {
+        chain: "sepolia",
+        format: "decimal",
+        limit: 100
+      }
     });
 
-    // const allNFTs = response.data.result;
+    const allNFTs = response.data.result;
+    console.log(`Found ${allNFTs.length} NFTs total`);
+    
+    return allNFTs.map((nft) => {
+      const tokenId = nft.token_id;
+      const defaultDetails = defaultNFTDetails[tokenId] || {
+        image: '/default-nft.png',
+        name: `NFT #${tokenId}`,
+        description: 'A unique digital collectible'
+      };
 
-    return response.data.result
-      .filter((nft) => nft.metadata && JSON.stringify(nft.metadata).toLowerCase().includes("skin"))
-      .map((nft) => ({
-        id: nft.token_id,
-        name: nft.name || "Unknown Skin",
-        image: nft.image || "/placeholder.svg",
-      }));
+      return {
+        id: tokenId,
+        name: nft.name || defaultDetails.name,
+        image: nft.metadata?.image || defaultDetails.image,
+        description: nft.metadata?.description || defaultDetails.description,
+        contractAddress: nft.token_address,
+        tokenURI: nft.token_uri
+      };
+    });
   } catch (error) {
     console.error("Error fetching NFTs:", error);
     return [];
   }
 };
 
-export function Marketplace({ walletAddress }:{walletAddress:string}) {
-    const [skins, setSkins] = useState([]);
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-  
-    const handleSellSkins = async () => {
-      if (!walletAddress) {
-        alert("Please connect your wallet first!");
-        return;
-      }
-  
-      const fetchedSkins = await fetchNFTs(walletAddress);
-    //   console.log("Fetched skins:", fetchedSkins);
-      setSkins(fetchedSkins);
-      setIsDialogOpen(true);
-    };
-  
-    return (
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <button onClick={handleSellSkins} className="mb-4 px-4 py-2 bg-blue-500 text-white rounded">
-          Sell Skins
-        </button>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {skins.map((skin) => (
-            <div key={skin.id} className="border p-2">
-              <img src={skin.image} alt={skin.name} className="w-full h-32 object-cover" />
-              <p className="text-center mt-2">{skin.name}</p>
-              <SellSkin tokenId={skin.id} />
-            </div>
-          ))}
+function MarketplaceContent({ walletAddress }) {
+  const [nfts, setNFTs] = useState([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const handleSellNFTs = async () => {
+    if (!walletAddress) {
+      alert("Please connect your wallet first!");
+      return;
+    }
+
+    const fetchedNFTs = await fetchNFTs(walletAddress);
+    setNFTs(fetchedNFTs);
+    setIsDialogOpen(true);
+  };
+
+  const NFTCard = ({ nft }) => (
+    <div className="border rounded-lg p-4 bg-white shadow-md">
+      <img 
+        src={nft.image} 
+        alt={nft.name} 
+        className="w-full h-48 object-cover rounded-md"
+        onError={(e) => {
+          e.target.src = '/default-nft.png';
+        }}
+      />
+      <div className="mt-4">
+        <h3 className="text-lg font-semibold">{nft.name}</h3>
+        <p className="text-sm text-gray-600 mt-1 line-clamp-2">{nft.description}</p>
+        <div className="mt-4">
+          <SellSkin tokenId={nft.id} price="0.1"/>
         </div>
-  
-        {/* Dialog for selling skins */}
-        {isDialogOpen && (
-          <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
-            <div className="bg-white p-4 rounded shadow-lg">
-              <h2 className="text-xl font-bold">Select Skins to Sell</h2>
-              <div className="grid grid-cols-2 gap-2 mt-4">
-                {skins.map((skin) => (
-                  <div key={skin.id} className="border p-2">
-                    <img src={skin.image} alt={skin.name} className="w-full h-32 object-cover" />
-                    <p className="text-center mt-2">{skin.name}</p>
-                    <SellSkin tokenId={skin.id} />
-                  </div>
-                ))}
-              </div>
-              <button onClick={() => setIsDialogOpen(false)} className="mt-4 w-full px-4 py-2 bg-red-500 text-white rounded">
-                Close
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <button 
+        onClick={handleSellNFTs} 
+        className="mb-6 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 shadow-md"
+      >
+        List NFTs for Sale
+      </button>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {nfts.map((nft) => (
+          <NFTCard key={nft.id} nft={nft} />
+        ))}
+      </div>
+
+      {isDialogOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold">List NFTs for Sale</h2>
+              <button 
+                onClick={() => setIsDialogOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <span className="text-2xl">×</span>
               </button>
             </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {nfts.map((nft) => (
+                <NFTCard key={nft.id} nft={nft} />
+              ))}
+            </div>
           </div>
-        )}
-      </div>
-    );
-  }
-  
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Wrapped Marketplace component with required providers
+export function Marketplace({ walletAddress }) {
+  return (
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <MarketplaceContent walletAddress={walletAddress} />
+      </QueryClientProvider>
+    </WagmiProvider>
+  );
+}
