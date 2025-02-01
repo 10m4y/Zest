@@ -12,6 +12,7 @@ export class Game {
     this.market = new Market(this.world.scene, new THREE.Vector3(8, 0.5, -8));
     this.controls = new Controls(this.cube);
     this.skins = new Set();
+    this.equippedSkin = "skin_man";
 
     // Available skins from Blocky Characters
     this.availableSkins = [
@@ -128,6 +129,7 @@ export class Game {
         if (!this.skins.has(crate.skinCode)) {
           this.skins.add(crate.skinCode);
           this.updateSkinBar();
+          this.equipSkin(crate.skinCode);
         }
 
         this.world.scene.remove(crate.mesh);
@@ -148,23 +150,39 @@ export class Game {
     }
   }
 
+  equipSkin(skinName) {
+    if (this.skins.has(skinName)) {
+      this.equippedSkin = skinName;
+      this.applySkinToCharacter(skinName);
+      console.log(`Equipped skin: ${skinName}`);
+    } else {
+      console.log(`You don't own this skin: ${skinName}`);
+    }
+  }
+
+  applySkinToCharacter(skinName) {
+    const textureLoader = new THREE.TextureLoader();
+    textureLoader.load(
+      `assets/blocky-chars/Skins/Basic/${skinName}.png`,
+      (texture) => {
+        if (this.cube.applyTexture) {
+          this.cube.applyTexture(texture);
+        }
+      },
+      undefined,
+      (error) => {
+        console.error("Error loading skin texture:", error);
+      }
+    );
+  }
+
   buySkin(skinName) {
     if (!this.skins.has(skinName)) {
-      const textureLoader = new THREE.TextureLoader();
-      textureLoader.load(
-        `assets/blocky-chars/Skins/Basic/${skinName}.png`,
-        (texture) => {
-          this.cube.mesh.traverse((child) => {
-            if (child.isMesh) {
-              child.material.map = texture;
-              child.material.needsUpdate = true;
-            }
-          });
-          this.skins.add(skinName);
-          this.updateSkinBar();
-          this.showAvailableSkins();
-        }
-      );
+      this.equipSkin(skinName);
+      this.applySkinToCharacter(skinName);
+      this.skins.add(skinName);
+      this.updateSkinBar();
+      this.showAvailableSkins();
     }
   }
 

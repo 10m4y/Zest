@@ -6,7 +6,8 @@ export class Cube {
   constructor(scene, world) {
     this.scene = scene;
     this.world = world;
-    this.currentTexture = null;
+    this.mesh = null; // Initialize mesh as null
+    this.currentMaterial = null;
     this.loadCharacter();
   }
 
@@ -16,30 +17,29 @@ export class Cube {
     const textureLoader = new THREE.TextureLoader();
 
     try {
-      // Load default skin texture
+      // Load default skin
       const defaultTexture = await textureLoader.loadAsync(
         "./assets/blocky-chars/Skins/Basic/skin_man.png"
       );
       defaultTexture.colorSpace = THREE.SRGBColorSpace;
 
-      // Load materials and apply texture
-      const materials = await mtlLoader.loadAsync(
-        "./assets/blocky-chars/Models/Non-rigged/basicCharacter.mtl"
-      );
-
-      // Modify material to use texture
-      materials.materials.Material = new THREE.MeshPhongMaterial({
+      // Create material with texture
+      this.currentMaterial = new THREE.MeshPhongMaterial({
         map: defaultTexture,
         shininess: 30,
       });
-
-      objLoader.setMaterials(materials);
 
       const model = await objLoader.loadAsync(
         "./assets/blocky-chars/Models/Non-rigged/basicCharacter.obj"
       );
 
-      // Apply transformations
+      // Apply material to all meshes
+      model.traverse((child) => {
+        if (child.isMesh) {
+          child.material = this.currentMaterial;
+        }
+      });
+
       model.scale.set(0.1, 0.1, 0.1);
       model.position.set(0, 0.5, 0);
       model.rotation.y = Math.PI;
@@ -49,6 +49,14 @@ export class Cube {
     } catch (error) {
       console.error("Error loading character:", error);
     }
+  }
+
+  applyTexture(texture) {
+    if (!this.currentMaterial) return;
+
+    texture.colorSpace = THREE.SRGBColorSpace;
+    this.currentMaterial.map = texture;
+    this.currentMaterial.needsUpdate = true;
   }
 
   move(direction) {
