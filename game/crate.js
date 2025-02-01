@@ -1,26 +1,30 @@
 import * as THREE from 'three';
 
 export class Crate {
-    constructor(scene, position) {
-        this.geometry = new THREE.BoxGeometry(1, 1, 1);
-        this.material = new THREE.MeshStandardMaterial({ color: this.genCrateSkin() });
-        this.mesh = new THREE.Mesh(this.geometry, this.material);
-        this.mesh.position.copy(position);
-        scene.add(this.mesh);
-    }
+  constructor(scene, position, skinCode) {
+    this.skinCode = skinCode; // Store the skin code
+    
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
+    const material = new THREE.MeshPhongMaterial({
+      color: this.getSkinColor(skinCode),
+      transparent: true,
+      opacity: 0.8
+    });
+    
+    this.mesh = new THREE.Mesh(geometry, material);
+    this.mesh.position.copy(position);
+    scene.add(this.mesh);
+  }
 
-    genCrateSkin() {
-        const colorCodes = [ // default skins
-            new THREE.Color(0xff5733), // Red
-            new THREE.Color(0x33ff57), // Green
-            new THREE.Color(0x5733ff), // Blue
-            new THREE.Color(0xfff033), // Yellow
-            new THREE.Color(0x33f0ff), // Light Blue
-            new THREE.Color(0xff33f0), // Magenta
-            new THREE.Color(0xf0f033), // Lime
-        ];
-
-        const randomColor = colorCodes[Math.floor(Math.random() * colorCodes.length)];
-        return randomColor;
-    }
+  getSkinColor(skinCode) {
+    const skinColors = {
+      skin_man: 0xffaaaa,
+      skin_woman: 0xaaffaa,
+      skin_orc: 0x00ff00,
+      skin_robot: 0x888888,
+      skin_soldier: 0x5555ff,
+      skin_adventurer: 0xffaa00
+    };
+    return skinColors[skinCode];
+  }
 }

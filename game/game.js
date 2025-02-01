@@ -8,10 +8,20 @@ import { Market } from "./market.js";
 export class Game {
   constructor() {
     this.world = new World();
-    this.cube = new Cube(this.world.scene);
+    this.cube = new Cube(this.world.scene, this.world);
     this.market = new Market(this.world.scene, new THREE.Vector3(8, 0.5, -8));
     this.controls = new Controls(this.cube);
     this.skins = new Set();
+
+    // Available skins from Blocky Characters
+    this.availableSkins = [
+      "skin_man",
+      "skin_woman",
+      "skin_orc",
+      "skin_robot",
+      "skin_soldier",
+      "skin_adventurer",
+    ];
 
     const n = 5;
     this.crates = [];
@@ -20,12 +30,14 @@ export class Game {
       const randomZ = (Math.random() - 0.25) * 10;
       const crate = new Crate(
         this.world.scene,
-        new THREE.Vector3(randomX, 0.5, randomZ)
+        new THREE.Vector3(randomX, 0.5, randomZ),
+        this.availableSkins[
+          Math.floor(Math.random() * this.availableSkins.length)
+        ]
       );
       this.crates.push(crate);
     }
 
-    this.dummySkins = ["ff5733", "33ff57", "5733ff", "f7a500", "ff5733"];
     this.isMarketOpen = false;
     this.currentMarketView = null;
 
@@ -94,24 +106,27 @@ export class Game {
     if (!skinBar) return;
     skinBar.innerHTML = "";
 
-    this.skins.forEach((color) => {
-      const skinBox = document.createElement("div");
-      skinBox.className = "skin-box";
-      skinBox.style.backgroundColor = `#${color}`;
-      skinBar.appendChild(skinBox);
+    this.skins.forEach((skinName) => {
+      const skinContainer = document.createElement("div");
+      skinContainer.className = "skin-box";
+
+      const img = document.createElement("img");
+      img.src = `assets/blocky-chars/Skins/Basic/${skinName}.png`;
+      img.className = "skin-preview";
+
+      skinContainer.appendChild(img);
+      skinBar.appendChild(skinContainer);
     });
   }
 
   checkCrateCollision() {
     for (let i = this.crates.length - 1; i >= 0; i--) {
       const crate = this.crates[i];
+      const distance = this.cube.mesh.position.distanceTo(crate.mesh.position);
 
-      if (this.cube.mesh.position.distanceTo(crate.mesh.position) < 1) {
-        this.cube.mesh.material.color.copy(crate.mesh.material.color);
-
-        const skinCode = crate.mesh.material.color.getHexString();
-        if (!this.skins.has(skinCode)) {
-          this.skins.add(skinCode);
+      if (distance < 1.5) {
+        if (!this.skins.has(crate.skinCode)) {
+          this.skins.add(crate.skinCode);
           this.updateSkinBar();
         }
 
@@ -122,8 +137,9 @@ export class Game {
   }
 
   checkMarketPopup() {
-    const isNearMarket = this.cube.mesh.position.distanceTo(this.market.mesh.position) < 2;
-    
+    const isNearMarket =
+      this.cube.mesh.position.distanceTo(this.market.mesh.position) < 2;
+
     if (isNearMarket && !this.isMarketOpen) {
       this.isMarketOpen = true;
       this.showMarketMain();
@@ -132,14 +148,23 @@ export class Game {
     }
   }
 
-  buySkin(skinCode) {
-    if (!this.skins.has(skinCode)) {
-      this.skins.add(skinCode);
-      this.updateSkinBar();
-      this.showAvailableSkins();
-      console.log(`Bought skin: ${skinCode}`);
-    } else {
-      console.log(`You already own this skin: ${skinCode}`);
+  buySkin(skinName) {
+    if (!this.skins.has(skinName)) {
+      const textureLoader = new THREE.TextureLoader();
+      textureLoader.load(
+        `assets/blocky-chars/Skins/Basic/${skinName}.png`,
+        (texture) => {
+          this.cube.mesh.traverse((child) => {
+            if (child.isMesh) {
+              child.material.map = texture;
+              child.material.needsUpdate = true;
+            }
+          });
+          this.skins.add(skinName);
+          this.updateSkinBar();
+          this.showAvailableSkins();
+        }
+      );
     }
   }
 
@@ -159,20 +184,21 @@ export class Game {
     if (!buySkinList) return;
     buySkinList.innerHTML = "";
 
-    this.dummySkins.forEach((skinCode) => {
-      if (!this.skins.has(skinCode)) {
-        const skinBox = document.createElement("div");
-        skinBox.className = "skin-box";
-        skinBox.style.backgroundColor = `#${skinCode}`;
+    this.availableSkins.forEach((skinName) => {
+      if (!this.skins.has(skinName)) {
+        const skinContainer = document.createElement("div");
+        skinContainer.className = "skin-item";
+
+        const img = document.createElement("img");
+        img.src = `assets/blocky-chars/Skins/Basic/${skinName}.png`;
+        img.className = "skin-preview";
 
         const buyButton = document.createElement("button");
-        buyButton.textContent = "Buy";
-        buyButton.onclick = () => this.buySkin(skinCode);
+        buyButton.textContent = `Buy ${skinName.split("_")[1]}`;
+        buyButton.onclick = () => this.buySkin(skinName);
 
-        const skinContainer = document.createElement("div");
-        skinContainer.appendChild(skinBox);
+        skinContainer.appendChild(img);
         skinContainer.appendChild(buyButton);
-
         buySkinList.appendChild(skinContainer);
       }
     });
@@ -183,19 +209,20 @@ export class Game {
     if (!sellSkinList) return;
     sellSkinList.innerHTML = "";
 
-    this.skins.forEach((skinCode) => {
-      const skinBox = document.createElement("div");
-      skinBox.className = "skin-box";
-      skinBox.style.backgroundColor = `#${skinCode}`;
+    this.skins.forEach((skinName) => {
+      const skinContainer = document.createElement("div");
+      skinContainer.className = "skin-item";
+
+      const img = document.createElement("img");
+      img.src = `assets/blocky-chars/Skins/Basic/${skinName}.png`;
+      img.className = "skin-preview";
 
       const sellButton = document.createElement("button");
       sellButton.textContent = "Sell";
-      sellButton.onclick = () => this.sellSkin(skinCode);
+      sellButton.onclick = () => this.sellSkin(skinName);
 
-      const skinContainer = document.createElement("div");
-      skinContainer.appendChild(skinBox);
+      skinContainer.appendChild(img);
       skinContainer.appendChild(sellButton);
-
       sellSkinList.appendChild(skinContainer);
     });
   }
