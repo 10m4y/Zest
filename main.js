@@ -1,6 +1,4 @@
 import { Game } from './game/game.js';
-import axios from "axios";
-import {ethers} from 'ethers';
 
 let game;
 
@@ -106,9 +104,6 @@ async function fetchNFTs(walletAddress) {
     }
 }
 
-
-
-
 function updateGameCrates(skinsNFTs) {
     if (!game?.crates) return;
 
@@ -125,10 +120,17 @@ function updateGameCrates(skinsNFTs) {
             crate.mesh.material.color.setStyle(colors[index]);
         }
     });
+  
+function startGame(walletAddress) {
+    console.log(`Game started for wallet: ${walletAddress}`);
+    game = new Game();
 }
 
 window.onload = () => {
-    game=new Game();
-    document.getElementById('connect-button').addEventListener('click', connectMetamask);
-
+    const walletAddress = localStorage.getItem("wallet_address");
+    if (walletAddress) {
+        document.getElementById("connect-screen").style.display = "none";
+        document.getElementById("game-container").style.display = "block";
+        startGame(walletAddress);
+    }
 };
