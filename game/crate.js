@@ -10,7 +10,7 @@ export class Crate {
     }
 
     genCrateSkin() {
-        const colorCodes = [ // our skins
+        const colorCodes = [ // default skins
             new THREE.Color(0xff5733), // Red
             new THREE.Color(0x33ff57), // Green
             new THREE.Color(0x5733ff), // Blue
