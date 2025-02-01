@@ -1,5 +1,4 @@
 import { Game } from './game/game.js';
-import { connectMetamask } from './connect.js';
 
 let game;
 
