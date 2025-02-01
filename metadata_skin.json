@@ -1,0 +1,24 @@
+{
+    "name":"Skin1", //NAME OF SKIN TO BE DISPLAYED,
+    "description": "Md2 model converted from w_machinegun.md2 using MD2 to JSON converter.",
+    "formatVersion": 3.1,
+    "scale" : 1.000000,
+
+    "image":"ipfs",//IMAGE OF SKIN TO BE DISPLAYED AFTER STORES IN IPFS AND HASH IS PROVIDED HERE
+    "external_url":"https://localhost:3000",//LINK OF MARKETPLACE
+
+    "attributes": [
+        { "trait_type": "Skin Type", "value": "Machine Gun" },
+        { "trait_type": "Rarity", "value": "Legendary" },
+        { "trait_type": "Material", "value": "Carbon Fiber" }
+    ],
+
+    "materials": [	{
+    "DbgColor" : 15658734,
+    "DbgIndex" : 0,
+    "DbgName" : "md2_material"
+    }]
+    
+
+    
+    }
