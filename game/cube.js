@@ -16,7 +16,6 @@ export class Cube {
 
     this.velocity = new THREE.Vector3();
     this.direction = new THREE.Vector3();
-    this.moveSpeed = 5.0;
 
     this.jumpForce = 10;
     this.gravity = 20;
@@ -27,9 +26,11 @@ export class Cube {
     this.targetRotation = 0;
     this.rotationSpeed = 0.2;
 
-    this.baseSpeed = 5.0;  // Base movement speed
-    this.speedMultiplier = 1.0; // Multiplier for speed boosts
-    this.maxSpeed = 10.0; // Maximum allowed speed
+    this.moveSpeed = 8.0;       // Base movement speed
+    this.sprintMultiplier = 2.0; // Sprint speed multiplier
+    this.currentSpeed = this.moveSpeed;
+    this.acceleration = 40.0;    // Higher acceleration for faster response
+    this.deceleration = 25.0;
   }
 
   async loadCharacter() {
@@ -77,17 +78,31 @@ export class Cube {
       this.velocity.y -= this.gravity * deltaTime;
     }
 
+    const targetVelocity = new THREE.Vector3(
+      this.direction.x * this.currentSpeed,
+      0,
+      this.direction.z * this.currentSpeed
+    );
+
+    this.velocity.x = THREE.MathUtils.lerp(
+      this.velocity.x,
+      targetVelocity.x,
+      this.acceleration * deltaTime
+    );
+    this.velocity.z = THREE.MathUtils.lerp(
+      this.velocity.z,
+      targetVelocity.z,
+      this.acceleration * deltaTime
+    );
+
     this.mesh.position.add(this.velocity.clone().multiplyScalar(deltaTime));
 
-    const airControl = this.isGrounded ? 1 : 0.2;
-    this.velocity.x *= 0.90 * airControl;
-    this.velocity.z *= 0.90 * airControl;
-
     if (this.direction.length() > 0.1) {
+      const targetYRotation = Math.atan2(this.direction.x, this.direction.z);
       this.mesh.rotation.y = THREE.MathUtils.lerp(
         this.mesh.rotation.y,
-        this.targetRotation,
-        this.rotationSpeed
+        targetYRotation,
+        this.rotationSpeed * deltaTime * 60 // frame rate
       );
     }
   }
@@ -127,14 +142,6 @@ export class Cube {
       this.direction.normalize();
       this.targetRotation = Math.atan2(this.direction.x, this.direction.z);
     }
-
-    const targetSpeed = Math.min(
-        this.baseSpeed * this.speedMultiplier, 
-        this.maxSpeed
-      );
-      
-      this.velocity.x = this.direction.x * targetSpeed;
-      this.velocity.z = this.direction.z * targetSpeed;
   }  
 
   updateCamera(camera) {

@@ -17,6 +17,9 @@ export class Game {
     this.skins = new Set();
     this.equippedSkin = "skin_man";
     this.clock = new THREE.Clock();
+    this.currentMarketView = localStorage.getItem("currentMarketView") || null;
+    this.isMarketOpen =
+      localStorage.getItem("isMarketOpen") === "true" || false;
 
     // skins from Blocky Characters
     this.availableSkins = [
@@ -28,11 +31,22 @@ export class Game {
       "skin_adventurer",
     ];
 
-    const count = 25;
+    const count = 10;
     this.generateCrates(count);
 
     this.isMarketOpen = false;
     this.currentMarketView = null;
+    if (this.isMarketOpen) {
+      if (this.currentMarketView === "main") {
+        this.showMarketMain();
+      } else if (this.currentMarketView === "buy") {
+        this.showBuyView();
+      } else if (this.currentMarketView === "sell") {
+        this.showSellView();
+      }
+    } else {
+      this.closeMarket();
+    }
 
     this.initializeEventListeners();
     this.animate();
@@ -97,6 +111,8 @@ export class Game {
 
   showSellView() {
     this.currentMarketView = "sell";
+    localStorage.setItem("currentMarketView", "sell");
+    localStorage.setItem("isMarketOpen", "true");
     document.getElementById("market-popup").style.display = "none";
     document.getElementById("buy-skin").style.display = "none";
     document.getElementById("sell-skin").style.display = "block";
@@ -133,6 +149,7 @@ export class Game {
     if (!this.cube.mesh || !this.cube.mesh.position) return;
     for (let i = this.crates.length - 1; i >= 0; i--) {
       const crate = this.crates[i];
+      crate.mesh.rotation.y += 0.04; 
       const distance = this.cube.mesh.position.distanceTo(crate.mesh.position);
 
       if (distance < 1.5) {
@@ -150,26 +167,17 @@ export class Game {
 
   checkMarketPopup() {
     if (!this.market.mesh || !this.cube.mesh) return;
-    
-    // Get actual market position from its mesh
+
     const marketPosition = new THREE.Vector3();
     this.market.mesh.getWorldPosition(marketPosition);
-    
-    // Get player position
+
     const playerPosition = this.cube.mesh.position.clone();
-    
-    // Calculate horizontal distance (ignore Y-axis)
+
     marketPosition.y = playerPosition.y;
     const distance = playerPosition.distanceTo(marketPosition);
 
-    // Debugging logs
-    console.log('Market position:', marketPosition);
-    console.log('Player position:', playerPosition);
-    console.log('Distance:', distance);
+    const detectionRadius = 3;
 
-    // Adjust detection radius
-    const detectionRadius = 3; // Increased from 2 to 3
-    
     if (distance < detectionRadius) {
       if (!this.isMarketOpen) {
         this.showMarketMain();

@@ -2,7 +2,7 @@ import * as THREE from "three";
 
 export class Crate {
   constructor(scene, position, skinCode) {
-    
+
     this.skinCode = skinCode;
 
     const textureLoader = new THREE.TextureLoader();
