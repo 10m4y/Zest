@@ -28,20 +28,6 @@ export class World {
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     document.body.appendChild(this.renderer.domElement);
 
-    // const groundGeometry = new THREE.PlaneGeometry(100, 100);
-    // const groundMaterial = new THREE.MeshStandardMaterial({
-    //   color: 0x808080,
-    //   roughness: 0.8,
-    //   metalness: 0.2,
-    // });
-    // this.ground = new THREE.Mesh(groundGeometry, groundMaterial);
-    // this.ground.rotation.x = -Math.PI / 2;
-    // this.ground.receiveShadow = true;
-    // this.scene.add(this.ground);
-
-    this.camera.position.set(0, 5, 10);
-    this.camera.lookAt(0, 0, 0);
-
     this.loadTerrain();
     this.addLighting();
     this.terrain = null;
@@ -59,11 +45,9 @@ export class World {
         }
       });
 
-      // Adjust scale and position
       this.terrain.scale.set(50, 50, 50);
       this.terrain.position.y = 2.5;
 
-      // Enable shadows
       this.terrain.traverse((child) => {
         if (child.isMesh) {
           child.castShadow = true;

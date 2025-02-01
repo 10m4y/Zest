@@ -2,6 +2,7 @@ import * as THREE from "three";
 
 export class Crate {
   constructor(scene, position, skinCode) {
+    
     this.skinCode = skinCode;
 
     const textureLoader = new THREE.TextureLoader();
@@ -9,7 +10,8 @@ export class Crate {
     crateTexture.wrapS = THREE.RepeatWrapping;
     crateTexture.wrapT = THREE.RepeatWrapping;
 
-    const materials = [ // for all faces
+    const materials = [
+      // for all faces
       new THREE.MeshPhongMaterial({ map: crateTexture }),
       new THREE.MeshPhongMaterial({ map: crateTexture }),
       new THREE.MeshPhongMaterial({ map: crateTexture }),

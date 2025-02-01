@@ -4,24 +4,28 @@ import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader.js";
 
 export class Cube {
   constructor(scene, world) {
+
     this.scene = scene;
     this.world = world;
-    this.mesh = null; // Initialize mesh as null
+    this.mesh = null;
     this.currentMaterial = null;
+
     this.loadCharacter();
+
     this.movementSpeed = 0.2;
-  }
 
-  jump() {
-    if (this.isGrounded) {
-      this.velocity.y = 10;
-    }
-  }
+    this.velocity = new THREE.Vector3();
+    this.direction = new THREE.Vector3();
+    this.moveSpeed = 5;
 
-  update() {
-    this.velocity.y -= 0.5; // Gravity
-    this.mesh.position.add(this.velocity);
+    this.jumpForce = 8;
+    this.gravity = 20;
+
     this.isGrounded = false;
+
+    this.cameraOffset = new THREE.Vector3(5, 5, 5);
+    this.targetRotation = 0;
+    this.rotationSpeed = 0.1;
   }
 
   async loadCharacter() {
@@ -30,13 +34,11 @@ export class Cube {
     const textureLoader = new THREE.TextureLoader();
 
     try {
-      // Load default skin
       const defaultTexture = await textureLoader.loadAsync(
         "./assets/blocky-chars/Skins/Basic/skin_man.png"
       );
       defaultTexture.colorSpace = THREE.SRGBColorSpace;
 
-      // Create material with texture
       this.currentMaterial = new THREE.MeshPhongMaterial({
         map: defaultTexture,
         shininess: 30,
@@ -46,7 +48,6 @@ export class Cube {
         "./assets/blocky-chars/Models/Non-rigged/basicCharacter.obj"
       );
 
-      // Apply material to all meshes
       model.traverse((child) => {
         if (child.isMesh) {
           child.material = this.currentMaterial;
@@ -64,6 +65,33 @@ export class Cube {
     }
   }
 
+  update(deltaTime) {
+    if (!this.isGrounded) {
+      this.velocity.y -= this.gravity * deltaTime;
+    }
+
+    this.mesh.position.add(this.velocity.clone().multiplyScalar(deltaTime));
+
+    const airControl = this.isGrounded ? 1 : 0.2;
+    this.velocity.x *= 0.9 * airControl;
+    this.velocity.z *= 0.9 * airControl;
+
+    if (this.direction.length() > 0.1) {
+      this.mesh.rotation.y = THREE.MathUtils.lerp(
+        this.mesh.rotation.y,
+        this.targetRotation,
+        this.rotationSpeed
+      );
+    }
+  }
+
+  jump() {
+    if (this.isGrounded) {
+      this.velocity.y = this.jumpForce;
+      this.isGrounded = false;
+    }
+  }
+
   applyTexture(texture) {
     if (!this.currentMaterial) return;
 
@@ -72,11 +100,49 @@ export class Cube {
     this.currentMaterial.needsUpdate = true;
   }
 
-  move(direction) {
-    const adjustedSpeed = this.movementSpeed;
-    if (direction === "left") this.mesh.position.x -= adjustedSpeed;
-    if (direction === "right") this.mesh.position.x += adjustedSpeed;
-    if (direction === "up") this.mesh.position.z -= adjustedSpeed;
-    if (direction === "down") this.mesh.position.z += adjustedSpeed;
+  move(direction, cameraQuaternion) {
+    if (!this.mesh || !this.world.terrain) return;
+    
+    // Get camera vectors (corrected for Three.js coordinate system)
+    const forward = new THREE.Vector3(0, 0, -1); // Facing camera direction
+    const right = new THREE.Vector3(1, 0, 0);
+    forward.applyQuaternion(cameraQuaternion);
+    right.applyQuaternion(cameraQuaternion);
+
+    // Calculate movement direction
+    this.direction.set(0, 0, 0);
+    
+    if (direction.includes('up')) this.direction.add(forward);
+    if (direction.includes('down')) this.direction.add(forward.negate());
+    if (direction.includes('left')) this.direction.add(right.negate());
+    if (direction.includes('right')) this.direction.add(right);
+
+    // Flatten Y axis and normalize
+    this.direction.y = 0;
+    if (this.direction.length() > 0) {
+      this.direction.normalize();
+      // Correct rotation calculation
+      this.targetRotation = Math.atan2(this.direction.x, this.direction.z);
+    }
+
+    // Apply horizontal movement
+    this.velocity.x = this.direction.x * this.moveSpeed;
+    this.velocity.z = this.direction.z * this.moveSpeed;
+  }  
+
+  updateCamera(camera) {
+    if (!this.mesh) return;
+
+    const idealOffset = new THREE.Vector3(5, 5, 5).applyQuaternion(
+      this.mesh.quaternion
+    );
+
+    const cameraPosition = this.mesh.position.clone().add(idealOffset);
+
+    camera.position.lerp(cameraPosition, 0.1);
+
+    const lookAtPoint = this.mesh.position.clone();
+    lookAtPoint.y += 1;
+    camera.lookAt(lookAtPoint);
   }
 }
