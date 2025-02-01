@@ -87,3 +87,5 @@ export class World {
     this.renderer.render(this.scene, this.camera);
   }
 }
+
+// Nature by 3Donimus [CC-BY] via Poly Pizza, shoutout for this amazing model :)

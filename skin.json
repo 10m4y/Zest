@@ -1,10 +1,8 @@
 {
-    "type": "skin" || "tools" || "animations",
     "id": 0,
     "name" : "",
     "description": "",
     "rarity": 0,
-    "image": "",
     "scale": 1.0,
-    "market_uri": ""
+    "market_uri": "http://localhost:3000"
 }

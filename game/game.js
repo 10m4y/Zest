@@ -15,6 +15,7 @@ export class Game {
     );
     this.controls = new Controls(this.cube);
     this.skins = new Set();
+    this.tools = new Set();
     this.equippedSkin = "skin_man";
     this.clock = new THREE.Clock();
     this.currentMarketView = localStorage.getItem("currentMarketView") || null;
@@ -24,11 +25,20 @@ export class Game {
     // skins from Blocky Characters
     this.availableSkins = [
       "skin_man",
+      "skin_manAlternative",
       "skin_woman",
+      "skin_womanAlternative",
       "skin_orc",
       "skin_robot",
       "skin_soldier",
       "skin_adventurer",
+    ];
+
+    this.availableTools = [
+        "knife",
+        "mace",
+        "pistol",
+        "sword",
     ];
 
     const count = 10;
