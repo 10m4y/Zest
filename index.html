@@ -1,36 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
+  <head>
+    <meta charset="utf-8" />
     <title>zest</title>
     <style>
-        body { margin: 0; font-family: Arial, sans-serif; }
-        #stash {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.5);
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        .bar {
-            display: flex;
-            gap: 5px;
-        }
-        .skin-box {
-            width: 20px;
-            height: 20px;
-            display: inline-block;
-            border: 1px solid white;
-        }
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+      }
+      #stash {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        z-index: 100;
+        pointer-events: none;
+      }
+      .bar {
+        display: flex;
+        gap: 5px;
+      }
+      .skin-box {
+        width: 20px;
+        height: 20px;
+        display: inline-block;
+        border: 1px solid white;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div id="stash">
-        <div>Skins:</div>
-        <div id="skin" class="bar"></div>
+      <div>Skins:</div>
+      <div id="skin" class="bar"></div>
     </div>
     <script type="module" src="main.js"></script>
-</body>
+  </body>
 </html>

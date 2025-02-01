@@ -64,6 +64,6 @@ export class Game {
     this.controls.update();
     this.checkCrateCollision();
 
-    this.world.render();
+    this.world.render(this.cube);
   }
 }
