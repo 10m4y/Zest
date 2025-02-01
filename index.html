@@ -8,7 +8,7 @@
         margin: 0;
         font-family: Arial, sans-serif;
       }
-      
+
       #connect-button {
         position: fixed;
         top: 20px;
@@ -21,7 +21,7 @@
         cursor: pointer;
         z-index: 1000;
       }
-      
+
       #wallet-info {
         position: fixed;
         top: 20px;
@@ -33,7 +33,7 @@
         display: none;
         z-index: 1000;
       }
-      
+
       #stash {
         position: absolute;
         top: 10px;
@@ -45,19 +45,19 @@
         z-index: 100;
         pointer-events: none;
       }
-      
+
       .bar {
         display: flex;
         gap: 5px;
       }
-      
+
       .skin-box {
         width: 20px;
         height: 20px;
         display: inline-block;
         border: 1px solid white;
       }
-      
+
       #market-popup {
         position: absolute;
         top: 50%;
@@ -78,17 +78,17 @@
         cursor: pointer;
       }
     </style>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <button id="connect-button">Connect MetaMask</button>
-    <div id="wallet-info"></div>
-    
-    <div id="stash">
-      <div>Skins:</div>
-      <div id="skin" class="bar"></div>
+    <div id="connect-screen">
+      <button id="connect-button">Connect MetaMask</button>
     </div>
-    <div id="market">
+    <div id="game-container" style="display: none">
+      <div id="stash">
+        <div>Skins:</div>
+        <div id="skin" class="bar"></div>
+      </div>
       <div id="market-popup">
         <div id="market-content">
           <h2>Market</h2>
@@ -108,7 +108,6 @@
         <button id="Sell">Return to Market</button>
       </div>
     </div>
-    
     <script type="module" src="main.js"></script>
   </body>
 </html>
