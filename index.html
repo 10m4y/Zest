@@ -3,68 +3,33 @@
   <head>
     <meta charset="utf-8" />
     <title>zest</title>
-    <style>
-      body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-      }
-      #stash {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        background: rgba(0, 0, 0, 0.5);
-        color: white;
-        padding: 10px;
-        border-radius: 5px;
-        z-index: 100;
-        pointer-events: none;
-      }
-      .bar {
-        display: flex;
-        gap: 5px;
-      }
-      .skin-box {
-        width: 20px;
-        height: 20px;
-        display: inline-block;
-        border: 1px solid white;
-      }
-      #market-popup {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        padding: 20px;
-        border-radius: 10px;
-        text-align: center;
-        z-index: 200;
-        display: none;
-      }
-
-      #market-popup button {
-        margin: 10px;
-        padding: 10px;
-        cursor: pointer;
-      }
-    </style>
+    <link rel="stylesheet" href="styles.css">
   </head>
   <body>
     <div id="stash">
       <div>Skins:</div>
       <div id="skin" class="bar"></div>
     </div>
-
-    <div id="market-popup">
-      <div id="market-content">
+    <div id="market">
+      <div id="market-popup">
+        <div id="market-content">
           <h2>Market</h2>
-          <button id="buy-skin">Buy Skin</button>
-          <button id="sell-skin">Sell Skin</button>
+          <button id="buy-skin-button">Buy Skin</button>
+          <button id="sell-skin-button">Sell Skin</button>
           <button id="close-market">Close</button>
+        </div>
       </div>
-  </div>
-  
+      <div id="buy-skin">
+        <h2>Buy a skin:</h2>
+        <div id="buy-skin-list"></div>
+        <button id="Buy">Return to Market</button>
+      </div>
+      <div id="sell-skin">
+        <h2>Sell a skin:</h2>
+        <div id="list-user-skins"></div>
+        <button id="Sell">Return to Market</button>
+      </div>
+    </div>
     <script type="module" src="main.js"></script>
   </body>
 </html>

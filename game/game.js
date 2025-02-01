@@ -16,8 +16,8 @@ export class Game {
     const n = 5;
     this.crates = [];
     for (let i = 0; i < n; i++) {
-      const randomX = (Math.random() - 0.5) * 10;
-      const randomZ = (Math.random() - 0.5) * 10;
+      const randomX = (Math.random() - 0.25) * 10;
+      const randomZ = (Math.random() - 0.25) * 10;
       const crate = new Crate(
         this.world.scene,
         new THREE.Vector3(randomX, 0.5, randomZ)
@@ -25,13 +25,68 @@ export class Game {
       this.crates.push(crate);
     }
 
+    this.dummySkins = ["ff5733", "33ff57", "5733ff", "f7a500", "ff5733"];
     this.isMarketOpen = false;
+    this.currentMarketView = null;
 
+    this.initializeEventListeners();
+    this.animate();
+  }
+
+  initializeEventListeners() {
     document.getElementById("close-market").addEventListener("click", () => {
-      this.toggleMarket(false);
+      this.closeMarket();
     });
 
-    this.animate();
+    document.getElementById("buy-skin-button").addEventListener("click", () => {
+      this.showBuyView();
+    });
+
+    document
+      .getElementById("sell-skin-button")
+      .addEventListener("click", () => {
+        this.showSellView();
+      });
+
+    document.getElementById("Buy").addEventListener("click", () => {
+      this.showMarketMain();
+    });
+
+    document.getElementById("Sell").addEventListener("click", () => {
+      this.showMarketMain();
+    });
+  }
+
+  showMarketMain() {
+    this.currentMarketView = "main";
+    document.getElementById("market-popup").style.display = "block";
+    document.getElementById("buy-skin").style.display = "none";
+    document.getElementById("sell-skin").style.display = "none";
+    this.isMarketOpen = true;
+  }
+
+  showBuyView() {
+    this.currentMarketView = "buy";
+    document.getElementById("market-popup").style.display = "none";
+    document.getElementById("buy-skin").style.display = "block";
+    document.getElementById("sell-skin").style.display = "none";
+    this.showAvailableSkins();
+  }
+
+  showSellView() {
+    this.currentMarketView = "sell";
+    document.getElementById("market-popup").style.display = "none";
+    document.getElementById("buy-skin").style.display = "none";
+    document.getElementById("sell-skin").style.display = "block";
+    this.listUserSkins();
+  }
+
+  closeMarket() {
+    this.isMarketOpen = false;
+    this.currentMarketView = null;
+    document.getElementById("market-popup").style.display = "none";
+    document.getElementById("buy-skin").style.display = "none";
+    document.getElementById("sell-skin").style.display = "none";
   }
 
   updateSkinBar() {
@@ -66,39 +121,90 @@ export class Game {
     }
   }
 
-  toggleMarket(show) {
-    const marketPopup = document.getElementById("market-popup");
-    if (show && !this.isMarketOpen) {
-      marketPopup.style.display = "block";
-      this.isMarketOpen = true;
-    } else if (!show && this.isMarketOpen) {
-      marketPopup.style.display = "none";
-      this.isMarketOpen = false;
-    }
-  }
-
   checkMarketPopup() {
-    if (this.cube.mesh.position.distanceTo(this.market.mesh.position) < 2 && !this.isMarketOpen) {
-      this.toggleMarket(true);
+    const isNearMarket = this.cube.mesh.position.distanceTo(this.market.mesh.position) < 2;
+    
+    if (isNearMarket && !this.isMarketOpen) {
+      this.isMarketOpen = true;
+      this.showMarketMain();
+    } else if (!isNearMarket && this.isMarketOpen) {
+      this.closeMarket();
     }
   }
 
-  buySkin() {
-
+  buySkin(skinCode) {
+    if (!this.skins.has(skinCode)) {
+      this.skins.add(skinCode);
+      this.updateSkinBar();
+      this.showAvailableSkins();
+      console.log(`Bought skin: ${skinCode}`);
+    } else {
+      console.log(`You already own this skin: ${skinCode}`);
+    }
   }
 
-  sellSkin() {
-    
+  sellSkin(skinCode) {
+    if (this.skins.has(skinCode)) {
+      this.skins.delete(skinCode);
+      this.updateSkinBar();
+      this.listUserSkins();
+      console.log(`Sold skin: ${skinCode}`);
+    } else {
+      console.log(`You don't own this skin: ${skinCode}`);
+    }
+  }
+
+  showAvailableSkins() {
+    const buySkinList = document.getElementById("buy-skin-list");
+    if (!buySkinList) return;
+    buySkinList.innerHTML = "";
+
+    this.dummySkins.forEach((skinCode) => {
+      if (!this.skins.has(skinCode)) {
+        const skinBox = document.createElement("div");
+        skinBox.className = "skin-box";
+        skinBox.style.backgroundColor = `#${skinCode}`;
+
+        const buyButton = document.createElement("button");
+        buyButton.textContent = "Buy";
+        buyButton.onclick = () => this.buySkin(skinCode);
+
+        const skinContainer = document.createElement("div");
+        skinContainer.appendChild(skinBox);
+        skinContainer.appendChild(buyButton);
+
+        buySkinList.appendChild(skinContainer);
+      }
+    });
+  }
+
+  listUserSkins() {
+    const sellSkinList = document.getElementById("list-user-skins");
+    if (!sellSkinList) return;
+    sellSkinList.innerHTML = "";
+
+    this.skins.forEach((skinCode) => {
+      const skinBox = document.createElement("div");
+      skinBox.className = "skin-box";
+      skinBox.style.backgroundColor = `#${skinCode}`;
+
+      const sellButton = document.createElement("button");
+      sellButton.textContent = "Sell";
+      sellButton.onclick = () => this.sellSkin(skinCode);
+
+      const skinContainer = document.createElement("div");
+      skinContainer.appendChild(skinBox);
+      skinContainer.appendChild(sellButton);
+
+      sellSkinList.appendChild(skinContainer);
+    });
   }
 
   animate() {
     requestAnimationFrame(() => this.animate());
-
     this.controls.update();
     this.checkCrateCollision();
-
     this.checkMarketPopup();
-
     this.world.render(this.cube);
   }
 }

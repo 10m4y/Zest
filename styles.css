@@ -1,0 +1,186 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
+}
+
+#stash {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 15px;
+  border-radius: 8px;
+  z-index: 100;
+  pointer-events: none;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bar {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.skin-box {
+  width: 30px;
+  height: 30px;
+  display: inline-block;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  transition: transform 0.2s ease;
+}
+
+#market-popup,
+#buy-skin,
+#sell-skin {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 25px;
+  border-radius: 15px;
+  text-align: center;
+  z-index: 200;
+  display: none;
+  min-width: 500px;  /* Increased from 300px */
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+#market-content,
+#buy-skin,
+#sell-skin {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+#buy-skin-list,
+#list-user-skins {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin: 15px 0;
+  padding: 10px;
+  max-height: none;
+  overflow-y: visible;
+}
+
+#buy-skin-list > div,
+#list-user-skins > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  transition: transform 0.2s ease;
+}
+
+#buy-skin-list > div:hover,
+#list-user-skins > div:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+#buy-skin-list .skin-box,
+#list-user-skins .skin-box {
+  width: 50px;
+  height: 50px;
+}
+
+#buy-skin-list::-webkit-scrollbar,
+#list-user-skins::-webkit-scrollbar {
+  width: 8px;
+}
+
+#buy-skin-list::-webkit-scrollbar-track,
+#list-user-skins::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+#buy-skin-list::-webkit-scrollbar-thumb,
+#list-user-skins::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+#Buy,
+#Sell {
+  background: rgba(255, 255, 255, 0.15);
+  width: 100%;
+  margin-top: 10px;
+}
+
+#Buy:hover,
+#Sell:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+#buy-skin-button {
+  background: rgba(46, 204, 113, 0.2);
+}
+
+#buy-skin-button:hover {
+  background: rgba(46, 204, 113, 0.3);
+}
+
+#sell-skin-button {
+  background: rgba(231, 76, 60, 0.2);
+}
+
+#sell-skin-button:hover {
+  background: rgba(231, 76, 60, 0.3);
+}
+
+#close-market {
+  background: rgba(127, 140, 141, 0.2);
+}
+
+#close-market:hover {
+  background: rgba(127, 140, 141, 0.3);
+}
