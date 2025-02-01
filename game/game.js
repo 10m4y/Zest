@@ -9,6 +9,7 @@ export class Game {
     this.world = new World();
     this.cube = new Cube(this.world.scene);
     this.controls = new Controls(this.cube);
+    this.skins = new Set();
 
     const n = 5;
     this.crates = [];
@@ -25,8 +26,20 @@ export class Game {
     this.animate();
   }
 
+  updateSkinBar() {
+    const skinBar = document.getElementById("skin");
+    if (!skinBar) return;
+    skinBar.innerHTML = "";
+
+    this.skins.forEach(color => {
+        const skinBox = document.createElement("div");
+        skinBox.className = "skin-box";
+        skinBox.style.backgroundColor = `#${color}`;
+        skinBar.appendChild(skinBox);
+    });
+  }
+
   checkCrateCollision() {
-    const metadata = new Set();
     for (let i = this.crates.length - 1; i >= 0; i--) {
       const crate = this.crates[i];
 
@@ -34,9 +47,10 @@ export class Game {
         this.cube.mesh.material.color.copy(crate.mesh.material.color);
 
         const skinCode = crate.mesh.material.color.getHexString();
-        metadata.add(skinCode);
-
-        console.log([...metadata]);
+        if (!this.skins.has(skinCode)) {
+            this.skins.add(skinCode);
+            this.updateSkinBar();
+        }
 
         this.world.scene.remove(crate.mesh);
         this.crates.splice(i, 1);
@@ -49,6 +63,7 @@ export class Game {
 
     this.controls.update();
     this.checkCrateCollision();
+
     this.world.render();
   }
 }
