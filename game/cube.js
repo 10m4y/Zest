@@ -9,6 +9,19 @@ export class Cube {
     this.mesh = null; // Initialize mesh as null
     this.currentMaterial = null;
     this.loadCharacter();
+    this.movementSpeed = 0.2;
+  }
+
+  jump() {
+    if (this.isGrounded) {
+      this.velocity.y = 10;
+    }
+  }
+
+  update() {
+    this.velocity.y -= 0.5; // Gravity
+    this.mesh.position.add(this.velocity);
+    this.isGrounded = false;
   }
 
   async loadCharacter() {
@@ -60,10 +73,10 @@ export class Cube {
   }
 
   move(direction) {
-    const speed = 0.2;
-    if (direction === "left") this.mesh.position.x -= speed;
-    if (direction === "right") this.mesh.position.x += speed;
-    if (direction === "up") this.mesh.position.z -= speed;
-    if (direction === "down") this.mesh.position.z += speed;
+    const adjustedSpeed = this.movementSpeed;
+    if (direction === "left") this.mesh.position.x -= adjustedSpeed;
+    if (direction === "right") this.mesh.position.x += adjustedSpeed;
+    if (direction === "up") this.mesh.position.z -= adjustedSpeed;
+    if (direction === "down") this.mesh.position.z += adjustedSpeed;
   }
 }

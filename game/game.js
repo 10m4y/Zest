@@ -9,7 +9,7 @@ export class Game {
   constructor() {
     this.world = new World();
     this.cube = new Cube(this.world.scene, this.world);
-    this.market = new Market(this.world.scene, new THREE.Vector3(8, 0.5, -8));
+    this.market = new Market(this.world.scene, new THREE.Vector3(-30, 0.5, -10));
     this.controls = new Controls(this.cube);
     this.skins = new Set();
     this.equippedSkin = "skin_man";
@@ -24,11 +24,11 @@ export class Game {
       "skin_adventurer",
     ];
 
-    const n = 5;
+    const n = 25;
     this.crates = [];
     for (let i = 0; i < n; i++) {
-      const randomX = (Math.random() - 0.25) * 10;
-      const randomZ = (Math.random() - 0.25) * 10;
+      const randomX = (Math.random() - 0.25) * 50;
+      const randomZ = (Math.random() - 0.25) * 50;
       const crate = new Crate(
         this.world.scene,
         new THREE.Vector3(randomX, 0.5, randomZ),
@@ -121,6 +121,7 @@ export class Game {
   }
 
   checkCrateCollision() {
+    if (!this.cube.mesh || !this.cube.mesh.position) return;
     for (let i = this.crates.length - 1; i >= 0; i--) {
       const crate = this.crates[i];
       const distance = this.cube.mesh.position.distanceTo(crate.mesh.position);
@@ -139,6 +140,7 @@ export class Game {
   }
 
   checkMarketPopup() {
+    if (!this.market.mesh || !this.market.mesh.position) return;
     const isNearMarket =
       this.cube.mesh.position.distanceTo(this.market.mesh.position) < 2;
 
@@ -245,11 +247,54 @@ export class Game {
     });
   }
 
+  handleSlopeMovement(normal) {
+    // Adjust movement based on surface normal
+    const slopeAngle = normal.angleTo(new THREE.Vector3(0, 1, 0));
+    if (slopeAngle > Math.PI / 4) {
+      this.cube.movementSpeed = 0.1; // Slow down on steep slopes
+    } else {
+      this.cube.movementSpeed = 0.2; // Normal speed
+    }
+  }
+
+  checkTerrainCollision() {
+    if (!this.world.terrain) return;
+
+    const raycaster = new THREE.Raycaster();
+    const characterPos = this.cube.mesh.position.clone();
+
+    // Adjust raycast parameters
+    characterPos.y += 50; // Start higher above terrain
+    const direction = new THREE.Vector3(0, -1, 0);
+
+    raycaster.set(characterPos, direction.normalize());
+    raycaster.far = 100; // Increase maximum distance
+
+    // Find all terrain meshes
+    const terrainMeshes = [];
+    this.world.terrain.traverse((child) => {
+      if (child.isMesh) terrainMeshes.push(child);
+    });
+
+    const intersects = raycaster.intersectObjects(terrainMeshes);
+
+    if (intersects.length > 0) {
+      const groundHeight = intersects[0].point.y;
+      // Adjust player height with offset based on character size
+      this.cube.mesh.position.y = groundHeight + 1.5;
+
+      // Optional: Add slope handling
+      const normal = intersects[0].face.normal.clone();
+      this.handleSlopeMovement(normal);
+    }
+  }
+
   animate() {
     requestAnimationFrame(() => this.animate());
     this.controls.update();
     this.checkCrateCollision();
     this.checkMarketPopup();
+    this.checkTerrainCollision();
     this.world.render(this.cube);
   }
 }

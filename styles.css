@@ -25,8 +25,11 @@ body {
 }
 
 canvas {
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
 }
+
 
 .skin-preview {
   width: 64px;
