@@ -3,12 +3,15 @@ import { Cube } from "./cube.js";
 import { Crate } from "./crate.js";
 import { World } from "./world.js";
 import { Controls } from "./controls.js";
+import { Market } from "./market.js";
 
 export class Game {
   constructor() {
     this.world = new World();
     this.cube = new Cube(this.world.scene);
+    this.market = new Market(this.world.scene, new THREE.Vector3(8, 0.5, -8));
     this.controls = new Controls(this.cube);
+    this.skins = new Set();
 
     const n = 5;
     this.crates = [];
@@ -22,11 +25,38 @@ export class Game {
       this.crates.push(crate);
     }
 
-    this.animate();
+    this.isMarketOpen = false;
+
+    document.getElementById("close-market").addEventListener("click", () => {
+      this.toggleMarket(false);
+    });
+
+    
+
+
+  window.updateSkinBar=function(skinColors){
+    const skinBar = document.getElementById("skin");
+    if (!skinBar) return;
+    skinBar.innerHTML = "";
+
+     // If skinColors is provided, update the skins Set
+     if (skinColors && Array.isArray(skinColors)) {
+      skinColors.forEach(color => {
+        if (color) this.skins.add(color);
+      });
+    }
+
+    this.skins.forEach((color) => {
+      const skinBox = document.createElement("div");
+      skinBox.className = "skin-box";
+      skinBox.style.backgroundColor = `#${color}`;
+      skinBar.appendChild(skinBox);
+    });
   }
+  this.animate();
+}
 
   checkCrateCollision() {
-    const metadata = new Set();
     for (let i = this.crates.length - 1; i >= 0; i--) {
       const crate = this.crates[i];
 
@@ -34,9 +64,10 @@ export class Game {
         this.cube.mesh.material.color.copy(crate.mesh.material.color);
 
         const skinCode = crate.mesh.material.color.getHexString();
-        metadata.add(skinCode);
-
-        console.log([...metadata]);
+        if (!this.skins.has(skinCode)) {
+          this.skins.add(skinCode);
+          window.updateSkinBar(skinCode);
+        }
 
         this.world.scene.remove(crate.mesh);
         this.crates.splice(i, 1);
@@ -44,11 +75,39 @@ export class Game {
     }
   }
 
+  toggleMarket(show) {
+    const marketPopup = document.getElementById("market-popup");
+    if (show && !this.isMarketOpen) {
+      marketPopup.style.display = "block";
+      this.isMarketOpen = true;
+    } else if (!show && this.isMarketOpen) {
+      marketPopup.style.display = "none";
+      this.isMarketOpen = false;
+    }
+  }
+
+  checkMarketPopup() {
+    if (this.cube.mesh.position.distanceTo(this.market.mesh.position) < 2 && !this.isMarketOpen) {
+      this.toggleMarket(true);
+    }
+  }
+
+  buySkin() {
+
+  }
+
+  sellSkin() {
+    
+  }
+
   animate() {
     requestAnimationFrame(() => this.animate());
 
     this.controls.update();
     this.checkCrateCollision();
-    this.world.render();
+
+    this.checkMarketPopup();
+
+    this.world.render(this.cube);
   }
 }
