@@ -23,7 +23,7 @@ const queryClient = new QueryClient();
 const defaultNFTDetails = {
   '1': {
     image: "https://gateway.pinata.cloud/ipfs/bafkreidnt4fcdokrw5pterkwapf4mfqxnqq7smexmauomeyynptfrek66y",
-    name: 'Epic Skin #1',
+    name: 'Epic Skin #2',
     description: 'A rare collectible skin'
   },
   '3': {

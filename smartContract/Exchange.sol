@@ -35,21 +35,19 @@ contract Queue {
 }
 
 contract Exchange {
-    MultiSkins multiSkins = MultiSkins(0x2213ddB69ef531E112Ec3677c5A96A653cD94C05); // Correct checksum address
+    MultiSkins multiSkins = MultiSkins(0x2213ddB69ef531E112Ec3677c5A96A653cD94C05); // Correct address of MultiSkins contract after its deployment
 
     mapping(uint256 => Queue) public sellerQueues;
     uint256[4] public skinPrices = [0.01 ether, 0.02 ether, 0.03 ether, 0.04 ether];
 
     function listSkin(uint256 tokenId) external {
-        address seller = msg.sender;
-
         require(msg.sender == multiSkins.ownerOf(tokenId), "You are not the owner of this NFT");
 
         uint256 skinType = multiSkins.getSkinType(tokenId);
         sellerQueues[skinType].enqueue(msg.sender);
     }
 
-    function tradeSkin(uint256 skinType) external {
+    function buySkin(uint256 skinType) external {
         require(sellerQueues[skinType].getLast() >= sellerQueues[skinType].getFirst(), "No sellers available");
 
         address buyer = msg.sender;
@@ -68,7 +66,7 @@ contract Exchange {
         multiSkins.transferFrom(multiSkins.ownerOf(tokenId), buyer, tokenId); // 'this' contract is already approved for that NFT
     }
 
-    function checkAvailability(uint256 skinType) external view returns (uint256) {
+    function checkAvailability(uint256 skinType) external view returns (uint256 available) {
         if (sellerQueues[skinType].getLast() >= sellerQueues[skinType].getFirst()) {
             return sellerQueues[skinType].getLast() - sellerQueues[skinType].getFirst() + 1;
         }

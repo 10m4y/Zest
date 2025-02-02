@@ -1,26 +1,45 @@
-import * as THREE from 'three';
+import * as THREE from "three";
 
 export class Crate {
-    constructor(scene, position) {
-        this.geometry = new THREE.BoxGeometry(1, 1, 1);
-        this.material = new THREE.MeshStandardMaterial({ color: this.genCrateSkin() });
-        this.mesh = new THREE.Mesh(this.geometry, this.material);
-        this.mesh.position.copy(position);
-        scene.add(this.mesh);
-    }
+  constructor(scene, position, skinCode) {
 
-    genCrateSkin() {
-        const colorCodes = [ // default skins
-            new THREE.Color(0xff5733), // Red
-            new THREE.Color(0x33ff57), // Green
-            new THREE.Color(0x5733ff), // Blue
-            new THREE.Color(0xfff033), // Yellow
-            new THREE.Color(0x33f0ff), // Light Blue
-            new THREE.Color(0xff33f0), // Magenta
-            new THREE.Color(0xf0f033), // Lime
-        ];
+    this.skinCode = skinCode;
 
-        const randomColor = colorCodes[Math.floor(Math.random() * colorCodes.length)];
-        return randomColor;
-    }
+    const textureLoader = new THREE.TextureLoader();
+    const crateTexture = textureLoader.load("../assets/textures/crate.gif");
+    crateTexture.wrapS = THREE.RepeatWrapping;
+    crateTexture.wrapT = THREE.RepeatWrapping;
+
+    const materials = [
+      // for all faces
+      new THREE.MeshPhongMaterial({ map: crateTexture }),
+      new THREE.MeshPhongMaterial({ map: crateTexture }),
+      new THREE.MeshPhongMaterial({ map: crateTexture }),
+      new THREE.MeshPhongMaterial({ map: crateTexture }),
+      new THREE.MeshPhongMaterial({ map: crateTexture }),
+      new THREE.MeshPhongMaterial({ map: crateTexture }),
+    ];
+
+    this.mesh = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), materials);
+
+    this.mesh.position.copy(position);
+    const hue = Math.random() * 0.1; // color variation
+    materials.forEach((material) => {
+      material.color.setHSL(hue, 0.4, 0.6);
+    });
+
+    scene.add(this.mesh);
+  }
+
+  getSkinColor(skinCode) {
+    const skinColors = {
+      skin_man: 0xffaaaa,
+      skin_woman: 0xaaffaa,
+      skin_orc: 0x00ff00,
+      skin_robot: 0x888888,
+      skin_soldier: 0x5555ff,
+      skin_adventurer: 0xffaa00,
+    };
+    return skinColors[skinCode];
+  }
 }

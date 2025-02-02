@@ -5,61 +5,92 @@ import { World } from "./world.js";
 import { Controls } from "./controls.js";
 import { Market } from "./market.js";
 
+// const { CallMint } = require('./mint');
+import { fetchNFTs } from "../connect.js";
+
 export class Game {
   constructor() {
     this.world = new World();
-    this.cube = new Cube(this.world.scene);
-    this.market = new Market(this.world.scene, new THREE.Vector3(8, 0.5, -8));
+    this.cube = new Cube(this.world.scene, this.world);
+    this.market = new Market(
+      this.world.scene,
+      new THREE.Vector3(-30, 0.5, -10)
+    );
     this.controls = new Controls(this.cube);
     this.skins = new Set();
+    this.initializeSkins();
+    this.tools = new Set();
+    this.equippedSkin = "skin_man";
+    this.clock = new THREE.Clock();
+    this.currentMarketView = localStorage.getItem("currentMarketView") || null;
+    this.isMarketOpen =
+      localStorage.getItem("isMarketOpen") === "true" || false;
+    this.wallet_address = localStorage.getItem("wallet_address");
 
-    const n = 5;
-    this.crates = [];
-    for (let i = 0; i < n; i++) {
-      const randomX = (Math.random() - 0.25) * 10;
-      const randomZ = (Math.random() - 0.25) * 10;
-      const crate = new Crate(
-        this.world.scene,
-        new THREE.Vector3(randomX, 0.5, randomZ)
-      );
-      this.crates.push(crate);
-    }
+    // skins from Blocky Characters
+    this.availableSkins = [
+      "skin_man",
+      "skin_manAlternative",
+      "skin_woman",
+      "skin_womanAlternative",
+      "skin_orc",
+      "skin_robot",
+      "skin_soldier",
+      "skin_adventurer",
+    ];
 
-    this.dummySkins = ["ff5733", "33ff57", "5733ff", "f7a500", "ff5733"];
+    const count = 10;
+    this.generateCrates(count);
+
     this.isMarketOpen = false;
     this.currentMarketView = null;
-
-    // Bind updateSkinBar to window with the correct context
-    window.updateSkinBar = (skinColors) => {
-      const skinBar = document.getElementById("skin");
-      if (!skinBar) return;
-      skinBar.innerHTML = "";
-
-      // If skinColors is provided, update the skins Set
-      if (skinColors && Array.isArray(skinColors)) {
-        skinColors.forEach(color => {
-          if (color) this.skins.add(color);
-        });
+    if (this.isMarketOpen) {
+      if (this.currentMarketView === "main") {
+        this.showMarketMain();
+      } else if (this.currentMarketView === "buy") {
+        this.showBuyView();
+      } else if (this.currentMarketView === "sell") {
+        this.showSellView();
       }
-
-      this.skins.forEach((color) => {
-        const skinBox = document.createElement("div");
-        skinBox.className = "skin-box";
-        skinBox.style.backgroundColor = `#${color}`;
-        skinBox.onclick = () => {
-          // Change cube color when clicking on a skin
-          this.cube.mesh.material.color.setHex(parseInt(color, 16));
-        };
-        skinBar.appendChild(skinBox);
-      });
-    };
+    } else {
+      this.closeMarket();
+    }
 
     this.initializeEventListeners();
     this.animate();
   }
 
-  updateSkinBar() {
-    window.updateSkinBar([]); // Call the window method with no new colors
+  async initializeSkins() {
+    try {
+      const nfts = await fetchNFTs();
+      nfts.forEach((nft) => {
+        // Allow both fetched and default skins
+        if (nft.name.includes("skin_")) {
+          this.skins.add(nft.name);
+        }
+      });
+      console.log("Skins initialized:", Array.from(this.skins));
+      this.updateSkinBar();
+    } catch (error) {
+      console.error("Error initializing skins:", error);
+    }
+  }
+
+  generateCrates(n) {
+    this.crates = [];
+    for (let i = 0; i < n; i++) {
+      const randomX = Math.random() * 50;
+      const randomZ = Math.random() * 50;
+      const crate = new Crate(
+        this.world.scene,
+        new THREE.Vector3(randomX, 2.5, randomZ),
+        this.availableSkins[
+          Math.floor(Math.random() * this.availableSkins.length)
+        ]
+      );
+      this.crates.push(crate);
+    }
+    return this.crates;
   }
 
   initializeEventListeners() {
@@ -104,6 +135,8 @@ export class Game {
 
   showSellView() {
     this.currentMarketView = "sell";
+    localStorage.setItem("currentMarketView", "sell");
+    localStorage.setItem("isMarketOpen", "true");
     document.getElementById("market-popup").style.display = "none";
     document.getElementById("buy-skin").style.display = "none";
     document.getElementById("sell-skin").style.display = "block";
@@ -118,17 +151,37 @@ export class Game {
     document.getElementById("sell-skin").style.display = "none";
   }
 
+  updateSkinBar() {
+    const skinBar = document.getElementById("skin");
+    if (!skinBar) return;
+    skinBar.innerHTML = "";
+
+    this.skins.forEach((skinName) => {
+      const skinContainer = document.createElement("div");
+      skinContainer.className = "skin-box";
+
+      const img = document.createElement("img");
+      img.src = `assets/blocky-chars/Skins/Basic/${skinName}.png`;
+      img.className = "skin-preview";
+
+      skinContainer.appendChild(img);
+      skinBar.appendChild(skinContainer);
+    });
+  }
+
   checkCrateCollision() {
+    if (!this.cube.mesh || !this.cube.mesh.position) return;
     for (let i = this.crates.length - 1; i >= 0; i--) {
       const crate = this.crates[i];
+      crate.mesh.rotation.y += 0.04;
+      const distance = this.cube.mesh.position.distanceTo(crate.mesh.position);
 
-      if (this.cube.mesh.position.distanceTo(crate.mesh.position) < 1) {
-        this.cube.mesh.material.color.copy(crate.mesh.material.color);
-
-        const skinCode = crate.mesh.material.color.getHexString();
-        if (!this.skins.has(skinCode)) {
-          this.skins.add(skinCode);
-          window.updateSkinBar([skinCode]); // Pass as array
+      if (distance < 1.5) {
+        if (!this.skins.has(crate.skinCode)) {
+          this.skins.add(crate.skinCode);
+          this.updateSkinBar();
+          this.equipSkin(crate.skinCode);
+          //CallMint(crate.skinCode);
         }
 
         this.world.scene.remove(crate.mesh);
@@ -137,25 +190,94 @@ export class Game {
     }
   }
 
+  // checkMarketPopup() {
+  //   if (!this.market.mesh || !this.cube.mesh) return;
+
+  //   const marketPosition = new THREE.Vector3();
+  //   this.market.mesh.getWorldPosition(marketPosition);
+
+  //   const playerPosition = this.cube.mesh.position.clone();
+
+  //   marketPosition.y = playerPosition.y;
+  //   const distance = playerPosition.distanceTo(marketPosition);
+
+  //   const detectionRadius = 3;
+
+  //   if (distance < detectionRadius) {
+  //     if (!this.isMarketOpen) {
+  //       this.showMarketMain();
+  //     }
+  //   } else {
+  //     if (this.isMarketOpen) {
+  //       this.closeMarket();
+  //     }
+  //   }
+  // }
+
   checkMarketPopup() {
-    const isNearMarket = this.cube.mesh.position.distanceTo(this.market.mesh.position) < 2;
-    
-    if (isNearMarket && !this.isMarketOpen) {
-      this.isMarketOpen = true;
-      this.showMarketMain();
-    } else if (!isNearMarket && this.isMarketOpen) {
-      this.closeMarket();
+    if (!this.market.mesh || !this.cube.mesh) return;
+
+    const marketPosition = new THREE.Vector3();
+    this.market.mesh.getWorldPosition(marketPosition);
+
+    const playerPosition = this.cube.mesh.position.clone();
+
+    marketPosition.y = playerPosition.y;
+    const distance = playerPosition.distanceTo(marketPosition);
+
+    const detectionRadius = 3;
+
+    if (distance < detectionRadius) {
+      if (!this.isMarketOpen) {
+        this.showMarketMain();
+      }
+
+      const walletAddress = localStorage.getItem("wallet_address");
+
+      if (walletAddress) {
+        const url = `http://localhost:3000/?wallet_address=${walletAddress}`;
+        window.location.href = url;
+      }
+    } else {
+      if (this.isMarketOpen) {
+        this.closeMarket();
+      }
     }
   }
 
-  buySkin(skinCode) {
-    if (!this.skins.has(skinCode)) {
-      this.skins.add(skinCode);
+  equipSkin(skinName) {
+    if (this.skins.has(skinName)) {
+      this.equippedSkin = skinName;
+      this.applySkinToCharacter(skinName);
+      console.log(`Equipped skin: ${skinName}`);
+    } else {
+      console.log(`You don't own this skin: ${skinName}`);
+    }
+  }
+
+  applySkinToCharacter(skinName) {
+    const textureLoader = new THREE.TextureLoader();
+    textureLoader.load(
+      `assets/blocky-chars/Skins/Basic/${skinName}.png`,
+      (texture) => {
+        if (this.cube.applyTexture) {
+          this.cube.applyTexture(texture);
+        }
+      },
+      undefined,
+      (error) => {
+        console.error("Error loading skin texture:", error);
+      }
+    );
+  }
+
+  buySkin(skinName) {
+    if (!this.skins.has(skinName)) {
+      this.equipSkin(skinName);
+      this.applySkinToCharacter(skinName);
+      this.skins.add(skinName);
       this.updateSkinBar();
       this.showAvailableSkins();
-      console.log(`Bought skin: ${skinCode}`);
-    } else {
-      console.log(`You already own this skin: ${skinCode}`);
     }
   }
 
@@ -175,20 +297,21 @@ export class Game {
     if (!buySkinList) return;
     buySkinList.innerHTML = "";
 
-    this.dummySkins.forEach((skinCode) => {
-      if (!this.skins.has(skinCode)) {
-        const skinBox = document.createElement("div");
-        skinBox.className = "skin-box";
-        skinBox.style.backgroundColor = `#${skinCode}`;
+    this.availableSkins.forEach((skinName) => {
+      if (!this.skins.has(skinName)) {
+        const skinContainer = document.createElement("div");
+        skinContainer.className = "skin-item";
+
+        const img = document.createElement("img");
+        img.src = `assets/blocky-chars/Skins/Basic/${skinName}.png`;
+        img.className = "skin-preview";
 
         const buyButton = document.createElement("button");
-        buyButton.textContent = "Buy";
-        buyButton.onclick = () => this.buySkin(skinCode);
+        buyButton.textContent = `Buy ${skinName.split("_")[1]}`;
+        buyButton.onclick = () => this.buySkin(skinName);
 
-        const skinContainer = document.createElement("div");
-        skinContainer.appendChild(skinBox);
+        skinContainer.appendChild(img);
         skinContainer.appendChild(buyButton);
-
         buySkinList.appendChild(skinContainer);
       }
     });
@@ -199,28 +322,69 @@ export class Game {
     if (!sellSkinList) return;
     sellSkinList.innerHTML = "";
 
-    this.skins.forEach((skinCode) => {
-      const skinBox = document.createElement("div");
-      skinBox.className = "skin-box";
-      skinBox.style.backgroundColor = `#${skinCode}`;
+    this.skins.forEach((skinName) => {
+      const skinContainer = document.createElement("div");
+      skinContainer.className = "skin-item";
+
+      const img = document.createElement("img");
+      img.src = `../assets/blocky-chars/Skins/Basic/${skinName}.png`;
+      img.className = "skin-preview";
 
       const sellButton = document.createElement("button");
       sellButton.textContent = "Sell";
-      sellButton.onclick = () => this.sellSkin(skinCode);
+      sellButton.onclick = () => this.sellSkin(skinName);
 
-      const skinContainer = document.createElement("div");
-      skinContainer.appendChild(skinBox);
+      skinContainer.appendChild(img);
       skinContainer.appendChild(sellButton);
-
       sellSkinList.appendChild(skinContainer);
     });
   }
 
+  checkTerrainCollision() {
+    if (!this.world?.terrain) return;
+
+    const raycaster = new THREE.Raycaster();
+    const characterPos = this.cube.mesh.position.clone();
+    characterPos.y += 1;
+
+    raycaster.set(characterPos, new THREE.Vector3(0, -1, 0));
+    raycaster.layers.enableAll();
+
+    const terrainMeshes = [];
+    this.world.terrain.traverse((child) => {
+      if (child.isMesh) terrainMeshes.push(child);
+    });
+
+    const intersects = raycaster.intersectObjects(terrainMeshes);
+
+    if (intersects.length > 0) {
+      const groundHeight = intersects[0].point.y;
+      if (this.cube.mesh.position.y <= groundHeight + 2.5) {
+        this.cube.mesh.position.y = groundHeight + 2.5;
+        this.cube.velocity.y = 0;
+        this.cube.isGrounded = true;
+      }
+      this.handleSlopeMovement(intersects[0].face.normal);
+    } else {
+      this.cube.isGrounded = false;
+    }
+  }
+
+  handleSlopeMovement(normal) {
+    const slopeAngle = normal.angleTo(new THREE.Vector3(0, 1, 0));
+    this.cube.moveSpeed = slopeAngle > Math.PI / 4 ? 2 : 5;
+  }
+
   animate() {
+    const deltaTime = this.clock.getDelta();
     requestAnimationFrame(() => this.animate());
-    this.controls.update();
+
+    this.controls.update(this.world.camera);
+    this.checkTerrainCollision();
+    this.cube.update(deltaTime);
     this.checkCrateCollision();
     this.checkMarketPopup();
+
     this.world.render(this.cube);
   }
 }
