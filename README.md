@@ -102,6 +102,4 @@ npx vite
 ```
 
 🚀 Thank you for checking out the project! 
-💻 Happy coding! 
 🌟 If you like the project, don't forget to ⭐️ it! 
-🎮 Enjoy the game!
