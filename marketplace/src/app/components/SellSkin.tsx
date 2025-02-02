@@ -9,6 +9,7 @@ import { MULTISKINS_CONTRACT, EXCHANGE_CONTRACT } from "../components/constants"
 
 import { useState } from "react";
 
+// export const exchange = exchangeAbi.abi as const;
 export function SellSkin({tokenId}:{tokenId:number}) {
     const [approved, setApproved] = useState(false);
 
@@ -34,7 +35,9 @@ export function SellSkin({tokenId}:{tokenId:number}) {
         functionName: "approve",
         args: [EXCHANGE_CONTRACT, tokenId],
     })
+    setApproved(true);
   }
+
   const handleList=()=>{
     writeList({
         address: EXCHANGE_CONTRACT,

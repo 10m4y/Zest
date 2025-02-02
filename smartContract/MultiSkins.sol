@@ -74,7 +74,7 @@ contract MultiSkins is ERC721, Ownable {
 
     // Function to get skin type for a specific token
     function getSkinType(uint256 skinId) public view returns (uint256) {
-        require(tokenExists(skinId), "Token does not exist");
+        // require(tokenExists(skinId), "Token does not exist");
         return _skinTypes[skinId];
     }
-}
+}   

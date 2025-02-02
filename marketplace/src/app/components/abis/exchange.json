@@ -1,6 +1,6 @@
-{
-	"abi": [
-	  {
+[
+	{
+	  
 		"inputs": [
 		  {
 			"internalType": "uint256",
@@ -83,5 +83,6 @@
 		"stateMutability": "view",
 		"type": "function"
 	  }
+	  
 	]
-  }
+  
