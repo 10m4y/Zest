@@ -6,6 +6,7 @@ import { Controls } from "./controls.js";
 import { Market } from "./market.js";
 
 // const { CallMint } = require('./mint');
+import { fetchNFTs } from "../connect.js";
 
 export class Game {
   constructor() {
@@ -17,6 +18,7 @@ export class Game {
     );
     this.controls = new Controls(this.cube);
     this.skins = new Set();
+    this.initializeSkins();
     this.tools = new Set();
     this.equippedSkin = "skin_man";
     this.clock = new THREE.Clock();
@@ -57,6 +59,22 @@ export class Game {
     this.initializeEventListeners();
     this.animate();
   }
+
+  async initializeSkins() {
+    try {
+        const nfts = await fetchNFTs();
+        nfts.forEach(nft => {
+            // Allow both fetched and default skins
+            if (nft.name.includes('skin_')) {
+                this.skins.add(nft.name);
+            }
+        });
+        console.log("Skins initialized:", Array.from(this.skins));
+        this.updateSkinBar();
+    } catch (error) {
+        console.error("Error initializing skins:", error);
+    }
+}
 
   generateCrates(n) {
     this.crates = [];

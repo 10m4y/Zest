@@ -1,4 +1,5 @@
-import { ethers } from "ethers";
+// import { ethers } from "ethers";
+import axios from "axios";
 
 async function connectMetamask() {
     if (!window.ethereum) {
@@ -32,17 +33,76 @@ async function connectMetamask() {
 }
 
 document.getElementById('connect-button').addEventListener('click', connectMetamask);
+const defaultNFTDetails = {
+  1: {
+    image:
+      "https://gateway.pinata.cloud/ipfs/bafkreidnt4fcdokrw5pterkwapf4mfqxnqq7smexmauomeyynptfrek66y",
+    name: "skin_woman",
+    description: "A brave warrior with unmatched skill.",
+  },
+  2: {
+    image:
+      "https://gateway.pinata.cloud/ipfs/bafkreiebl7cxougnm7p6cezszceu4ujjitouoyqxyevaedpqvcdlcoc5gq",
+    name: "skin_adventurer",
+    description: "An adventurous traveler seeking treasures.",
+  },
+};
+const fetchNFTs = async () => {
+  try {
+    const tanmay_wallet = "0xEe770E09A62d75BFC424FE6d045851A8e6423D06";
+    console.log("Fetching NFTs for wallet:", tanmay_wallet);
+    const url = `https://deep-index.moralis.io/api/v2/${tanmay_wallet}/nft`;
+    const response = await axios.get(url, {
+      headers: {
+        "X-API-Key":
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6ImI5NzRlNmI2LTA4NWMtNDY0Ni04NTAzLTA0MjdkMThjZDQ3NCIsIm9yZ0lkIjoiNDI4NzYxIiwidXNlcklkIjoiNDQxMDM2IiwidHlwZUlkIjoiNGJkYzliMzktNjRhZC00NWZkLTk4NTktZjE2NzhmODA0ZTg3IiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3Mzg0MDYyOTAsImV4cCI6NDg5NDE2NjI5MH0.Uk-eecGq8n00z7Ky1yw1ubkibGKZc2g8uWCpBiBqdaE",
+      },
+      params: {
+        chain: "sepolia",
+        format: "decimal",
+        limit: 100,
+      },
+    });
 
-export { connectMetamask };
+    const allNFTs = response.data.result;
+    console.log(`Found ${allNFTs.length} NFTs total`); // Fixed template literal
 
+    return allNFTs.map((nft) => {
+        const tokenId = nft.token_id.toString(); // Ensure string key match
+        const metadata = typeof nft.metadata === 'string' ? 
+            JSON.parse(nft.metadata) : 
+            nft.metadata || {};
+        
+        const defaultDetails = defaultNFTDetails[tokenId] || {
+            image: '/default-nft.png',
+            name: `skin_${tokenId}`, // Ensure default names have skin_ prefix
+            description: 'A unique digital collectible'
+        };
+    
+        return {
+            id: tokenId,
+            name: metadata.name || defaultDetails.name,
+            image: metadata.image || defaultDetails.image,
+            description: metadata.description || defaultDetails.description,
+            contractAddress: nft.token_address,
+            tokenURI: nft.token_uri
+        };
+    });
+    
+  } catch (error) {
+    console.error("Error fetching NFTs:", error);
+    return [];
+  }
+};
+
+export { fetchNFTs };
 
 // async function fetchNFTs(walletAddress) {
 //     try {
 //         const url = `https://deep-index.moralis.io/api/v2/nft/${walletAddress}`;
 //         const response = await axios.get(url, {
 //             headers: {
-//                 // "X-API-Key": process.env.MORALIS_API_KEY, // Replace with your actual API key
-//                 "X-API-Key":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6ImI5NzRlNmI2LTA4NWMtNDY0Ni04NTAzLTA0MjdkMThjZDQ3NCIsIm9yZ0lkIjoiNDI4NzYxIiwidXNlcklkIjoiNDQxMDM2IiwidHlwZUlkIjoiNGJkYzliMzktNjRhZC00NWZkLTk4NTktZjE2NzhmODA0ZTg3IiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3Mzg0MDYyOTAsImV4cCI6NDg5NDE2NjI5MH0.Uk-eecGq8n00z7Ky1yw1ubkibGKZc2g8uWCpBiBqdaE"
+// "X-API-Key": process.env.MORALIS_API_KEY, // Replace with your actual API key
 //             },
 //         });
 
@@ -75,14 +135,13 @@ export { connectMetamask };
 //     }
 // }
 
-
 // function updateGameCrates(skinsNFTs) {
 //     if (!game?.crates) return;
 
 //     // Get colors from NFTs or generate random ones
-//     const colors = skinsNFTs.map(nft => 
-//         nft.background_color ? 
-//         `#${nft.background_color}` : 
+//     const colors = skinsNFTs.map(nft =>
+//         nft.background_color ?
+//         `#${nft.background_color}` :
 //         `#${Math.floor(Math.random()*16777215).toString(16)}`
 //     );
 
