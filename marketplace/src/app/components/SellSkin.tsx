@@ -43,7 +43,7 @@ export function SellSkin({tokenId}:{tokenId:number}) {
         address: EXCHANGE_CONTRACT,
         abi: exchangeAbi,
         functionName: "listSkin",
-        args: [tokenId],
+        args: [tokenId=3],
     })
   }
 
