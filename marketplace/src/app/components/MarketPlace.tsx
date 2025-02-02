@@ -26,8 +26,13 @@ const defaultNFTDetails = {
     name: 'Epic Skin #2',
     description: 'A rare collectible skin'
   },
-  '2': {
+  '3': {
     image: "https://gateway.pinata.cloud/ipfs/bafkreiebl7cxougnm7p6cezszceu4ujjitouoyqxyevaedpqvcdlcoc5gq",
+    name: 'Legendary Skin #2',
+    description: 'Limited edition skin'
+  },
+  '2': {
+    image: "https://gateway.pinata.cloud/ipfs/bafkreidnt4fcdokrw5pterkwapf4mfqxnqq7smexmauomeyynptfrek66y",
     name: 'Legendary Skin #2',
     description: 'Limited edition skin'
   }
@@ -39,7 +44,7 @@ const fetchNFTs = async (walletAddress) => {
     const url = `https://deep-index.moralis.io/api/v2/${walletAddress}/nft`;
     const response = await axios.get(url, {
       headers: {
-        "X-API-Key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6ImI5NzRlNmI2LTA4NWMtNDY0Ni04NTAzLTA0MjdkMThjZDQ3NCIsIm9yZ0lkIjoiNDI4NzYxIiwidXNlcklkIjoiNDQxMDM2IiwidHlwZUlkIjoiNGJkYzliMzktNjRhZC00NWZkLTk4NTktZjE2NzhmODA0ZTg3IiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3Mzg0MDYyOTAsImV4cCI6NDg5NDE2NjI5MH0.Uk-eecGq8n00z7Ky1yw1ubkibGKZc2g8uWCpBiBqdaE",
+        "X-API-Key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6ImNmZDAwZDFlLWZhYTEtNGI1NC05ZGUzLWQ3MzRlYTlmY2U2YiIsIm9yZ0lkIjoiNDI4OTA1IiwidXNlcklkIjoiNDQxMTgxIiwidHlwZUlkIjoiYzlmZmIxNGQtOTJjNy00MDFlLTk3NzQtNzczZGY0YmI5M2FlIiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3Mzg0NTQ4MjgsImV4cCI6NDg5NDIxNDgyOH0.IdPcRyN27fN0KnEgTaRkBif-p_I56DcnOUtQTG64rGs",
       },
       params: {
         chain: "sepolia",
@@ -50,7 +55,7 @@ const fetchNFTs = async (walletAddress) => {
 
     const allNFTs = response.data.result;
     console.log(`Found ${allNFTs.length} NFTs total`);
-    
+    console.log("NFTs:", allNFTs);
     return allNFTs.map((nft) => {
       const tokenId = nft.token_id;
       const defaultDetails = defaultNFTDetails[tokenId] || {
@@ -87,6 +92,7 @@ function MarketplaceContent({ walletAddress }) {
     const fetchedNFTs = await fetchNFTs(walletAddress);
     setNFTs(fetchedNFTs);
     setIsDialogOpen(true);
+    console.log("Fetched NFTs:", fetchedNFTs);
   };
 
   const NFTCard = ({ nft }) => (
