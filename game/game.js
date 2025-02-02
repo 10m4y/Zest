@@ -62,19 +62,19 @@ export class Game {
 
   async initializeSkins() {
     try {
-        const nfts = await fetchNFTs();
-        nfts.forEach(nft => {
-            // Allow both fetched and default skins
-            if (nft.name.includes('skin_')) {
-                this.skins.add(nft.name);
-            }
-        });
-        console.log("Skins initialized:", Array.from(this.skins));
-        this.updateSkinBar();
+      const nfts = await fetchNFTs();
+      nfts.forEach((nft) => {
+        // Allow both fetched and default skins
+        if (nft.name.includes("skin_")) {
+          this.skins.add(nft.name);
+        }
+      });
+      console.log("Skins initialized:", Array.from(this.skins));
+      this.updateSkinBar();
     } catch (error) {
-        console.error("Error initializing skins:", error);
+      console.error("Error initializing skins:", error);
     }
-}
+  }
 
   generateCrates(n) {
     this.crates = [];
@@ -173,7 +173,7 @@ export class Game {
     if (!this.cube.mesh || !this.cube.mesh.position) return;
     for (let i = this.crates.length - 1; i >= 0; i--) {
       const crate = this.crates[i];
-      crate.mesh.rotation.y += 0.04; 
+      crate.mesh.rotation.y += 0.04;
       const distance = this.cube.mesh.position.distanceTo(crate.mesh.position);
 
       if (distance < 1.5) {
@@ -189,6 +189,30 @@ export class Game {
       }
     }
   }
+
+  // checkMarketPopup() {
+  //   if (!this.market.mesh || !this.cube.mesh) return;
+
+  //   const marketPosition = new THREE.Vector3();
+  //   this.market.mesh.getWorldPosition(marketPosition);
+
+  //   const playerPosition = this.cube.mesh.position.clone();
+
+  //   marketPosition.y = playerPosition.y;
+  //   const distance = playerPosition.distanceTo(marketPosition);
+
+  //   const detectionRadius = 3;
+
+  //   if (distance < detectionRadius) {
+  //     if (!this.isMarketOpen) {
+  //       this.showMarketMain();
+  //     }
+  //   } else {
+  //     if (this.isMarketOpen) {
+  //       this.closeMarket();
+  //     }
+  //   }
+  // }
 
   checkMarketPopup() {
     if (!this.market.mesh || !this.cube.mesh) return;
@@ -206,6 +230,13 @@ export class Game {
     if (distance < detectionRadius) {
       if (!this.isMarketOpen) {
         this.showMarketMain();
+      }
+
+      const walletAddress = localStorage.getItem("wallet_address");
+
+      if (walletAddress) {
+        const url = `http://localhost:3000/?wallet_address=${walletAddress}`;
+        window.location.href = url;
       }
     } else {
       if (this.isMarketOpen) {

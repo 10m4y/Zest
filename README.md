@@ -1,12 +1,3 @@
-# Zest
-
-## How to run the game?
-
-``npm install``
-
-``npx vite``
-
-```markdown
 # Zest: NFT Skin Marketplace and Open World Game
 
 Zest is an innovative platform that combines a blockchain-based NFT marketplace for in-game skins with an immersive open-world game. Players can buy, sell, and trade unique skins as NFTs, which can be used in the game environment.
@@ -15,11 +6,9 @@ Zest is an innovative platform that combines a blockchain-based NFT marketplace 
 
 1. [Project Overview](#project-overview)
 2. [Smart Contracts](#smart-contracts)
-3. [Frontend](#frontend)
+3. [Marketplace](#marketplace)
 4. [Game](#game)
 5. [Setup Instructions](#setup-instructions)
-6. [Contributing](#contributing)
-7. [License](#license)
 
 ## Project Overview
 
@@ -43,7 +32,7 @@ Key features:
 - Buy skins from other players
 - Check availability of skins
 
-## Frontend
+## Marketplace
 
 The frontend marketplace is built with Next.js and provides an intuitive interface for users to interact with the smart contracts. It's located in the `marketplace` folder and includes features such as:
 
@@ -63,61 +52,56 @@ The open-world game is built using Three.js and features:
 
 ## Setup Instructions
 
-Follow these steps to set up the Zest project locally:
+Follow these steps to set up Zest project locally:
 
 1. Clone the repository:
 ```
-
-git clone [https://github.com/your-username/zest.git](https://github.com/your-username/zest.git)
+git clone [https://github.com/cypher4802/Zest.git](https://github.com/cypher4802/Zest.git)
 cd zest
-
-```plaintext
+```
 
 2. Install dependencies:
 ```
-
 npm install
-
-```plaintext
+```
 
 3. Set up the smart contracts:
+```
 - Install Truffle: `npm install -g truffle`
 - Compile contracts: `truffle compile`
 - Deploy contracts (make sure you have a local blockchain running, e.g., Ganache):
 ```
 
-truffle migrate --reset
-
-```plaintext
-
 4. Set up the frontend:
 ```
-
 cd marketplace
 npm install
-
-```plaintext
-
-5. Configure environment variables:
-- Create a `.env.local` file in the `marketplace` directory
-- Add the following variables:
+cd ../
 ```
 
+5. Configure environment variables:
+- Create a `.env` file in the `root` directory
+- Add the following variables:
+```
+MULTI_SKINS_ADDRESS = ''
 NEXT_PUBLIC_CONTRACT_ADDRESS=`<deployed_contract_address>`
 NEXT_PUBLIC_RPC_URL=`<your_ethereum_rpc_url>`
-
-```plaintext
+```
 
 6. Run the frontend:
 ```
-
 npm run dev
-
-```plaintext
-
-7. Set up the game:
 ```
 
-- Navigate to the game directory
-- Install dependencies: `npm install`
-- Start the game: `npm start`
+7. Set up the game:
+
+- Navigate to the root directory
+- Start the game: 
+```
+npx vite
+```
+
+🚀 Thank you for checking out the project! 
+💻 Happy coding! 
+🌟 If you like the project, don't forget to ⭐️ it! 
+🎮 Enjoy the game!
