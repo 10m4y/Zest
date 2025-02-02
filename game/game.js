@@ -62,7 +62,7 @@ export class Game {
 
   async initializeSkins() {
     try {
-      const nfts = await fetchNFTs();
+      const nfts = await fetchNFTs(this.wallet_address);
       nfts.forEach((nft) => {
         // Allow both fetched and default skins
         if (nft.name.includes("skin_")) {

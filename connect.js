@@ -47,11 +47,10 @@ const defaultNFTDetails = {
     description: "An adventurous traveler seeking treasures.",
   },
 };
-const fetchNFTs = async () => {
+const fetchNFTs = async (wallet_address) => {
   try {
-    const tanmay_wallet = "0xEe770E09A62d75BFC424FE6d045851A8e6423D06";
-    console.log("Fetching NFTs for wallet:", tanmay_wallet);
-    const url = `https://deep-index.moralis.io/api/v2/${tanmay_wallet}/nft`;
+    console.log("Fetching NFTs for wallet:", wallet_address);
+    const url = `https://deep-index.moralis.io/api/v2/${wallet_address}/nft`;
     const response = await axios.get(url, {
       headers: {
         "X-API-Key":

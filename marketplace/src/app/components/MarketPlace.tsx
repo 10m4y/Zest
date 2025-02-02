@@ -7,7 +7,7 @@ import { http, createConfig } from 'wagmi';
 import { sepolia } from 'wagmi/chains';
 import { WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-
+ 
 // Create Wagmi config
 const config = createConfig({
   chains: [sepolia],
