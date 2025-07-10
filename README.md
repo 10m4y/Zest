@@ -1,5 +1,11 @@
 # Zest: NFT Skin Marketplace and Open World Game
 
+<img width="1914" height="920" alt="Screenshot from 2025-02-02 09-08-05" src="https://github.com/user-attachments/assets/b2970c62-458a-4ca9-b5ad-ca04d2c37af6" />
+
+<img width="1914" height="920" alt="Screenshot from 2025-02-02 09-07-34" src="https://github.com/user-attachments/assets/88b2b43c-cdb4-4fac-8f57-a0c760156241" />
+
+
+
 Zest is an innovative platform that combines a blockchain-based NFT marketplace for in-game skins with an immersive open-world game. Players can buy, sell, and trade unique skins as NFTs, which can be used in the game environment.
 
 ## Table of Contents
